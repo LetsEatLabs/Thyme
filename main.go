@@ -86,5 +86,6 @@ func main() {
 
 	request := readFileToString(arguments["input"])
 	response := callChatGPT(request, promptsConfig[prompt].(string))
-	fmt.Println(response)
+	cleanResponse := removeLeadingNewLines(response)
+	typeWriterPrint(cleanResponse)
 }
