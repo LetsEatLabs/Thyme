@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 )
 
-// ///
+// Read the prompts.json file and return it as a map///
 func readPromptsConfig() map[string]interface{} {
 	var result map[string]interface{}
 	promptsConfigString := readFileToString("prompts.json")
@@ -16,6 +17,24 @@ func readPromptsConfig() map[string]interface{} {
 		fmt.Println(err)
 	}
 
+	return result
+}
+
+// Parses the command line arguments and returns them in a map
+// of flag:argument, if there are an uneven number of arguments then we
+// name the final argument "input" and add it to the map.
+func parseArgs() map[string]string {
+	args := os.Args[1:]
+	result := make(map[string]string)
+	for i := 0; i < len(args); i += 2 {
+
+		if i+2 > len(args) {
+			result["input"] = args[i]
+		} else {
+			result[args[i]] = args[i+1]
+		}
+
+	}
 	return result
 }
 
@@ -33,8 +52,12 @@ func readFileToString(filename string) string {
 }
 
 func main() {
+	arguments := parseArgs()
 	promptsConfig := readPromptsConfig()
-	request := readFileToString("test.txt")
-	response := callChatGPT(request, promptsConfig["listify"].(string))
+
+	prompt := arguments["--prompt"]
+
+	request := readFileToString(arguments["input"])
+	response := callChatGPT(request, promptsConfig[prompt].(string))
 	fmt.Println(response)
 }
