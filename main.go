@@ -55,7 +55,7 @@ func main() {
 	arguments := parseArgs()
 	promptsConfig := readPromptsConfig()
 
-	prompt := arguments["--prompt"]
+	prompt := arguments["-p"]
 
 	request := readFileToString(arguments["input"])
 	response := callChatGPT(request, promptsConfig[prompt].(string))
