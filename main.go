@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -19,19 +18,6 @@ Flags:
 `
 
 	fmt.Println(helpStr)
-}
-
-// Read the prompts.json file and return it as a map
-func readPromptsConfig() map[string]interface{} {
-	var result map[string]interface{}
-	promptsConfigString := readFileToString("prompts.json")
-	err := json.Unmarshal([]byte(promptsConfigString), &result)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return result
 }
 
 // Parses the command line arguments and returns them in a map
@@ -80,12 +66,12 @@ func readFileToString(filename string) string {
 
 func main() {
 	arguments := parseArgs()
-	promptsConfig := readPromptsConfig()
+	prompts := initPrompts()
 
 	prompt := arguments["-p"]
 
 	request := readFileToString(arguments["input"])
-	response := callChatGPT(request, promptsConfig[prompt].(string))
+	response := callChatGPT(request, prompts[prompt].Text)
 	cleanResponse := removeLeadingNewLines(response)
 	typeWriterPrint(cleanResponse)
 }
