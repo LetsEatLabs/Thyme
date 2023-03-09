@@ -11,10 +11,11 @@ import (
 // fails to pass any arguments
 func helpMessage() {
 	helpStr := `
-Usage: chatgpt <flags> <input file>
+Usage: thyme <flags> <input file>
 
 Flags:
-    -p <prompt>     The prompt to use for the chatbot
+    -p <prompt>     The prompt to use for the GPT request
+    -q <question>   Ask a question and get a response (do not use with -p)
     -h (--help)     Display this help message
 `
 
