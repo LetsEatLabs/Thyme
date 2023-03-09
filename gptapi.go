@@ -14,7 +14,7 @@ func callChatGPT(query string, prompt string) string {
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 
-		//https://platform.openai.com/docs/guides/chat/chat-vs-completions
+		// https://platform.openai.com/docs/guides/chat/chat-vs-completions
 
 		openai.ChatCompletionRequest{
 			Model: openai.GPT3Dot5Turbo,
@@ -44,7 +44,7 @@ func callChatGPTNoPrompt(query string) string {
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 
-		//https://platform.openai.com/docs/guides/chat/chat-vs-completions
+		// https://platform.openai.com/docs/guides/chat/chat-vs-completions
 
 		openai.ChatCompletionRequest{
 			Model: openai.GPT3Dot5Turbo,
