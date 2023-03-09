@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 // Help message to display when the user asks for help or
@@ -68,10 +69,21 @@ func main() {
 	arguments := parseArgs()
 	prompts := initPrompts()
 
+	// -q flag will allow us to just ask a question and get a response
+	_, ok := arguments["-q"]
+	if ok {
+		request := strings.Join(os.Args[2:], " ")
+		response := callChatGPTNoPrompt(request)
+		cleanResponse := removeLeadingNewLines(response)
+		typeWriterPrint(cleanResponse)
+		os.Exit(0)
+	}
+
 	prompt := arguments["-p"]
 
 	request := readFileToString(arguments["input"])
 	response := callChatGPT(request, prompts[prompt].Text)
 	cleanResponse := removeLeadingNewLines(response)
 	typeWriterPrint(cleanResponse)
+
 }
