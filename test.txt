@@ -1,3 +1,0 @@
-Lip Gloss doesn’t replace Bubble Tea. Rather, it is an excellent Bubble Tea companion. It was designed to make assembling terminal user interface views as simple and fun as possible so that you can focus on building your application instead of concerning yourself with low-level layout details.
-
-In simple terms, you can use Lip Gloss to help build your Bubble Tea views.
