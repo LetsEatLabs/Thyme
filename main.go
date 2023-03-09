@@ -1,37 +1,25 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 // Help message to display when the user asks for help or
 // fails to pass any arguments
 func helpMessage() {
 	helpStr := `
-Usage: chatgpt <flags> <input file>
+Usage: thyme <flags> <input file>
 
 Flags:
-    -p <prompt>     The prompt to use for the chatbot
+    -p <prompt>     The prompt to use for the GPT request
+    -q <question>   Ask a question and get a response (do not use with -p)
     -h (--help)     Display this help message
 `
 
 	fmt.Println(helpStr)
-}
-
-// Read the prompts.json file and return it as a map
-func readPromptsConfig() map[string]interface{} {
-	var result map[string]interface{}
-	promptsConfigString := readFileToString("prompts.json")
-	err := json.Unmarshal([]byte(promptsConfigString), &result)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return result
 }
 
 // Parses the command line arguments and returns them in a map
@@ -80,11 +68,23 @@ func readFileToString(filename string) string {
 
 func main() {
 	arguments := parseArgs()
-	promptsConfig := readPromptsConfig()
+	prompts := initPrompts()
+
+	// -q flag will allow us to just ask a question and get a response
+	_, ok := arguments["-q"]
+	if ok {
+		request := strings.Join(os.Args[2:], " ")
+		response := callChatGPTNoPrompt(request)
+		cleanResponse := removeLeadingNewLines(response)
+		typeWriterPrint(cleanResponse)
+		os.Exit(0)
+	}
 
 	prompt := arguments["-p"]
 
 	request := readFileToString(arguments["input"])
-	response := callChatGPT(request, promptsConfig[prompt].(string))
-	fmt.Println(response)
+	response := callChatGPT(request, prompts[prompt].Text)
+	cleanResponse := removeLeadingNewLines(response)
+	typeWriterPrint(cleanResponse)
+
 }

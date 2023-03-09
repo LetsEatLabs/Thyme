@@ -8,7 +8,7 @@ import (
 	openai "github.com/sashabaranov/go-openai"
 )
 
-// Call the ChatGPT API with passed string
+// Call the ChatGPT API with passed string and using a prompt
 func callChatGPT(query string, prompt string) string {
 	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 	resp, err := client.CreateChatCompletion(
@@ -23,6 +23,32 @@ func callChatGPT(query string, prompt string) string {
 					Role:    openai.ChatMessageRoleSystem,
 					Content: prompt,
 				},
+				{
+					Role:    openai.ChatMessageRoleUser,
+					Content: query,
+				},
+			},
+		},
+	)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return resp.Choices[0].Message.Content
+}
+
+// Call the ChatGPT API with passed string and no prompt
+func callChatGPTNoPrompt(query string) string {
+	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
+	resp, err := client.CreateChatCompletion(
+		context.Background(),
+
+		// https://platform.openai.com/docs/guides/chat/chat-vs-completions
+
+		openai.ChatCompletionRequest{
+			Model: openai.GPT3Dot5Turbo,
+			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleUser,
 					Content: query,
