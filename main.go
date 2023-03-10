@@ -1,27 +1,29 @@
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
-	"os"
-	"strings"
+    "fmt"
+    "io/ioutil"
+    "os"
+    "strings"
 )
 
 // Help message to display when the user asks for help or
 // fails to pass any arguments
 func helpMessage() {
-	helpStr := `
+    helpStr := `
 Usage: thyme <flags> <input file>
 
 Flags:
-    -p <prompt>     	The prompt to use for the GPT request
-    -q <question>   	Ask a question and get a response (cannot be used with any other flags)
-    -h (--help)     	Display this help message
-    --animation false 	Will omit the spinner and typewriter. Anything other than "false" is ignored.
-    --show-prompts		List all available prompts (-p) and their descriptions. Will exit.	
+    -p <prompt>         The prompt to use for the GPT request
+    -q <question>       Ask a question and get a response (cannot be used with any other flags)
+    -h (--help)         Display this help message
+    --animation false   Will omit the spinner and typewriter. 
+                        Flag _must_ come first when used with the -q flag. 
+                        "false" must be passed. 
+    -l                  List all available prompts (-p) and their descriptions. Will exit.  
 `
 
-	fmt.Println(helpStr)
+    fmt.Println(helpStr)
 }
 
 // Parses the command line arguments and returns them in a map
@@ -31,114 +33,122 @@ Flags:
 // Display the help message and exit.
 func parseArgs() map[string]string {
 
-	if len(os.Args) == 1 {
-		helpMessage()
-		os.Exit(0)
-	}
+    if len(os.Args) == 1 {
+        helpMessage()
+        os.Exit(0)
+    }
 
-	if os.Args[1] == "-h" || os.Args[1] == "--help" {
-		helpMessage()
-		os.Exit(0)
-	}
+    if os.Args[1] == "-h" || os.Args[1] == "--help" {
+        helpMessage()
+        os.Exit(0)
+    }
 
-	// If the user wants to see the prompts, print them and exit
-	if os.Args[1] == "--show-prompts" {
-		listAvailablePrompts()
-		os.Exit(0)
-	}
+    // If the user wants to see the prompts, print them and exit
+    if os.Args[1] == "-l" {
+        listAvailablePrompts()
+        os.Exit(0)
+    }
 
-	args := os.Args[1:]
-	result := make(map[string]string)
-	for i := 0; i < len(args); i += 2 {
+    args := os.Args[1:]
+    result := make(map[string]string)
+    for i := 0; i < len(args); i += 2 {
 
-		if i+2 > len(args) {
-			result["input"] = args[i]
-		} else {
-			result[args[i]] = args[i+1]
-		}
+        if i+2 > len(args) {
+            result["input"] = args[i]
+        } else {
+            result[args[i]] = args[i+1]
+        }
 
-	}
-	return result
+    }
+    return result
 }
 
 /////
 
 // Read a file and return its contents as a string
 func readFileToString(filename string) string {
-	file, err := ioutil.ReadFile(filename)
+    file, err := ioutil.ReadFile(filename)
 
-	if err != nil {
-		fmt.Println(err)
-	}
+    if err != nil {
+        fmt.Println(err)
+    }
 
-	return string(file)
+    return string(file)
 }
 
 func main() {
 
-	// If the env argument OPEN_AI_API key does not exist, exit
-	// with an error message
-	if os.Getenv("OPENAI_API_KEY") == "" {
-		fmt.Println("Please set the OPENAI_API_KEY environment variable")
-		os.Exit(1)
-	}
+    // If the env argument OPEN_AI_API key does not exist, exit
+    // with an error message
+    if os.Getenv("OPENAI_API_KEY") == "" {
+        fmt.Println("Please set the OPENAI_API_KEY environment variable")
+        os.Exit(1)
+    }
 
-	// Parse arguements and load the prompts struct
-	arguments := parseArgs()
-	prompts := initPrompts()
+    // Parse arguements and load the prompts struct
+    arguments := parseArgs()
+    prompts := initPrompts()
 
-	// Make the spinner channel so we can tell when its done
-	spinningComplete := make(chan bool)
+    // Make the spinner channel so we can tell when its done
+    spinningComplete := make(chan bool)
 
-	// Check if the user wants to not use the spinner via the --spinner flag
-	// User _must_ pass exactly "--spinner false" to disable the spinner
-	animationFlagVal := "true"
-	animationFlagVal, ok := arguments["--animation"]
+    // Check if the user wants to not use the spinner via the --spinner flag
+    // User _must_ pass exactly "--spinner false" to disable the spinner
+    animationFlagVal := "true"
+    animationFlagVal, ok := arguments["--animation"]
 
-	if animationFlagVal != "false" {
-		go spinner(spinningComplete)
-	}
+    if animationFlagVal != "false" {
+        go spinner(spinningComplete)
+    }
 
-	// -q flag will allow us to just ask a question and get a response
-	_, ok = arguments["-q"]
-	if ok {
-		request := strings.Join(os.Args[2:], " ")
-		response := callChatGPTNoPrompt(request)
+    // -q flag will allow us to just ask a question and get a response
+    _, ok = arguments["-q"]
+    if ok {
+        var request string
+        var response string
 
-		// Tell the spinner we are done
-		if animationFlagVal != "false" {
-			spinningComplete <- true
-		}
+        if animationFlagVal != "false" {
+            request = strings.Join(os.Args[2:], " ")
+            response = callChatGPTNoPrompt(request)
+        } else {
+            request = strings.Join(os.Args[4:], " ")
+            response = callChatGPTNoPrompt(request)
+        }
 
-		cleanResponse := removeLeadingNewLines(response)
+        // Tell the spinner we are done
+        if animationFlagVal != "false" {
+            spinningComplete <- true
+        }
 
-		if animationFlagVal != "false" {
-			typeWriterPrint(cleanResponse)
-		} else {
-			fmt.Println(cleanResponse)
-		}
+        cleanResponse := removeLeadingNewLines(response)
 
-		os.Exit(0)
-	}
+        if animationFlagVal != "false" {
+            typeWriterPrint(cleanResponse)
+        } else {
+            fmt.Println(cleanResponse)
+        }
 
-	// Get the value after the -p flag if we are not doing a -q request
-	prompt := arguments["-p"]
+        os.Exit(0)
+    }
 
-	request := readFileToString(arguments["input"])
-	response := callChatGPT(request, prompts[prompt].Text)
+    // Get the value after the -p flag if we are not doing a -q request
+    prompt := arguments["-p"]
 
-	// Tell the spinner we are done
+    request := readFileToString(arguments["input"])
+    response := callChatGPT(request, prompts[prompt].Text)
 
-	if animationFlagVal != "false" {
-		spinningComplete <- true
-	}
+    // Tell the spinner we are done
 
-	cleanResponse := removeLeadingNewLines(response)
+    if animationFlagVal != "false" {
+        spinningComplete <- true
+    }
 
-	if animationFlagVal != "false" {
-		typeWriterPrint(cleanResponse)
-	} else {
-		fmt.Println(cleanResponse)
-	}
+    cleanResponse := removeLeadingNewLines(response)
+
+    if animationFlagVal != "false" {
+        typeWriterPrint(cleanResponse)
+    } else {
+        fmt.Println(cleanResponse)
+    }
 
 }
