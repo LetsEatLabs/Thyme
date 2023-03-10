@@ -15,7 +15,7 @@ func removeLeadingNewLines(s string) string {
 // Prints text so that it looks like a typewriter
 func typeWriterPrint(s string) {
 
-	re := regexp.MustCompile(`(?m)[^\S\r\n]{2,}`)
+	re := regexp.MustCompile(`(?m)[^\S\r\n\t]{2,}`)
 	newStr := re.ReplaceAllString(s, "")
 	for _, c := range newStr {
 		fmt.Printf("%c", c)
@@ -24,4 +24,26 @@ func typeWriterPrint(s string) {
 
 	// One final space so we can separate lines printed in this fancy manner
 	fmt.Printf(" ")
+}
+
+// Function that is a spinner that last until a query is done
+func spinner(spinningComplete chan bool) {
+	for {
+
+		for _, r := range `-\|/` {
+			fmt.Printf("\r%c Querying...", r)
+			time.Sleep(time.Millisecond * 100)
+		}
+
+		select {
+		case value := <-spinningComplete:
+			if value == true {
+				fmt.Printf("\r")
+				return
+			}
+
+		default:
+			continue
+		}
+	}
 }

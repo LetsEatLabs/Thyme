@@ -67,23 +67,45 @@ func readFileToString(filename string) string {
 }
 
 func main() {
+
+	// If the env argument OPEN_AI_API key does not exist, exit
+	// with an error message
+	if os.Getenv("OPENAI_API_KEY") == "" {
+		fmt.Println("Please set the OPENAI_API_KEY environment variable")
+		os.Exit(1)
+	}
+
+	// Parse arguements and load the prompts struct
 	arguments := parseArgs()
 	prompts := initPrompts()
+
+	// Do our fancy spinner
+	spinningComplete := make(chan bool)
+	go spinner(spinningComplete)
 
 	// -q flag will allow us to just ask a question and get a response
 	_, ok := arguments["-q"]
 	if ok {
 		request := strings.Join(os.Args[2:], " ")
 		response := callChatGPTNoPrompt(request)
+
+		// Tell the spinner we are done
+		spinningComplete <- true
+
 		cleanResponse := removeLeadingNewLines(response)
 		typeWriterPrint(cleanResponse)
 		os.Exit(0)
 	}
 
+	// Get the value after the -p flag if we are not doing a -q request
 	prompt := arguments["-p"]
 
 	request := readFileToString(arguments["input"])
 	response := callChatGPT(request, prompts[prompt].Text)
+
+	// Tell the spinner we are done
+	spinningComplete <- true
+
 	cleanResponse := removeLeadingNewLines(response)
 	typeWriterPrint(cleanResponse)
 
