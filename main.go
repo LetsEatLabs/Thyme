@@ -14,9 +14,11 @@ func helpMessage() {
 Usage: thyme <flags> <input file>
 
 Flags:
-    -p <prompt>     The prompt to use for the GPT request
-    -q <question>   Ask a question and get a response (do not use with -p)
-    -h (--help)     Display this help message
+    -p <prompt>     	The prompt to use for the GPT request
+    -q <question>   	Ask a question and get a response (cannot be used with any other flags)
+    -h (--help)     	Display this help message
+    --spinner false 	Will omit the loading spinner. Anything other than "false" is ignored.
+    --show-prompts		List all available prompts (-p) and their descriptions. Will exit.	
 `
 
 	fmt.Println(helpStr)
@@ -36,6 +38,12 @@ func parseArgs() map[string]string {
 
 	if os.Args[1] == "-h" || os.Args[1] == "--help" {
 		helpMessage()
+		os.Exit(0)
+	}
+
+	// If the user wants to see the prompts, print them and exit
+	if os.Args[1] == "--show-prompts" {
+		listAvailablePrompts()
 		os.Exit(0)
 	}
 
@@ -79,18 +87,28 @@ func main() {
 	arguments := parseArgs()
 	prompts := initPrompts()
 
-	// Do our fancy spinner
+	// Make the spinner channel so we can tell when its done
 	spinningComplete := make(chan bool)
-	go spinner(spinningComplete)
+
+	// Check if the user wants to not use the spinner via the --spinner flag
+	// User _must_ pass exactly "--spinner false" to disable the spinner
+	spinFlagVal := "true"
+	spinFlagVal, ok := arguments["--spinner"]
+
+	if spinFlagVal != "false" {
+		go spinner(spinningComplete)
+	}
 
 	// -q flag will allow us to just ask a question and get a response
-	_, ok := arguments["-q"]
+	_, ok = arguments["-q"]
 	if ok {
 		request := strings.Join(os.Args[2:], " ")
 		response := callChatGPTNoPrompt(request)
 
 		// Tell the spinner we are done
-		spinningComplete <- true
+		if spinFlagVal != "false" {
+			spinningComplete <- true
+		}
 
 		cleanResponse := removeLeadingNewLines(response)
 		typeWriterPrint(cleanResponse)
@@ -104,7 +122,10 @@ func main() {
 	response := callChatGPT(request, prompts[prompt].Text)
 
 	// Tell the spinner we are done
-	spinningComplete <- true
+
+	if spinFlagVal != "false" {
+		spinningComplete <- true
+	}
 
 	cleanResponse := removeLeadingNewLines(response)
 	typeWriterPrint(cleanResponse)

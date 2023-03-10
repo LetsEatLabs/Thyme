@@ -6,16 +6,20 @@ import (
 	"time"
 )
 
+/////////////////
+
 // Removes any leading new lines before text in a string
 func removeLeadingNewLines(s string) string {
 	re := regexp.MustCompile(`^\s+`)
 	return re.ReplaceAllString(s, "")
 }
 
+/////////////////
+
 // Prints text so that it looks like a typewriter
 func typeWriterPrint(s string) {
 
-	re := regexp.MustCompile(`(?m)[^\S\r\n\t]{2,}`)
+	re := regexp.MustCompile(`(?m:!^)[^\S\r\n\t]{2,}`)
 	newStr := re.ReplaceAllString(s, "")
 	for _, c := range newStr {
 		fmt.Printf("%c", c)
@@ -25,6 +29,8 @@ func typeWriterPrint(s string) {
 	// One final space so we can separate lines printed in this fancy manner
 	fmt.Printf(" ")
 }
+
+/////////////////
 
 // Function that is a spinner that last until a query is done
 func spinner(spinningComplete chan bool) {
@@ -38,7 +44,7 @@ func spinner(spinningComplete chan bool) {
 		select {
 		case value := <-spinningComplete:
 			if value == true {
-				fmt.Printf("\r")
+				fmt.Printf("\r                    \r")
 				return
 			}
 
@@ -47,3 +53,18 @@ func spinner(spinningComplete chan bool) {
 		}
 	}
 }
+
+/////////////////
+
+// Display the available prompts to the user
+func listAvailablePrompts() {
+
+	prompts := initPrompts()
+
+	fmt.Printf("Available prompts:\n\n")
+	for _, prompt := range prompts {
+		fmt.Printf("- %s: %s\n", prompt.Name, prompt.Description)
+	}
+}
+
+/////////////////

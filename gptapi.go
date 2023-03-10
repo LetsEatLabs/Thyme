@@ -8,6 +8,8 @@ import (
 	openai "github.com/sashabaranov/go-openai"
 )
 
+/////////////////
+
 // Call the ChatGPT API with passed string and using a prompt
 func callChatGPT(query string, prompt string) string {
 	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
@@ -38,6 +40,8 @@ func callChatGPT(query string, prompt string) string {
 	return resp.Choices[0].Message.Content
 }
 
+/////////////////
+
 // Call the ChatGPT API with passed string and no prompt
 func callChatGPTNoPrompt(query string) string {
 	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
@@ -64,6 +68,8 @@ func callChatGPTNoPrompt(query string) string {
 	return resp.Choices[0].Message.Content
 }
 
+/////////////////
+
 // Call the GPT Completions API
 func callGPT(query string) string {
 	c := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
@@ -80,3 +86,5 @@ func callGPT(query string) string {
 	}
 	return resp.Choices[0].Text
 }
+
+/////////////////
