@@ -17,7 +17,7 @@ Flags:
     -p <prompt>     	The prompt to use for the GPT request
     -q <question>   	Ask a question and get a response (cannot be used with any other flags)
     -h (--help)     	Display this help message
-    --spinner false 	Will omit the loading spinner. Anything other than "false" is ignored.
+    --animation false 	Will omit the spinner and typewriter. Anything other than "false" is ignored.
     --show-prompts		List all available prompts (-p) and their descriptions. Will exit.	
 `
 
@@ -92,10 +92,10 @@ func main() {
 
 	// Check if the user wants to not use the spinner via the --spinner flag
 	// User _must_ pass exactly "--spinner false" to disable the spinner
-	spinFlagVal := "true"
-	spinFlagVal, ok := arguments["--spinner"]
+	animationFlagVal := "true"
+	animationFlagVal, ok := arguments["--animation"]
 
-	if spinFlagVal != "false" {
+	if animationFlagVal != "false" {
 		go spinner(spinningComplete)
 	}
 
@@ -106,12 +106,18 @@ func main() {
 		response := callChatGPTNoPrompt(request)
 
 		// Tell the spinner we are done
-		if spinFlagVal != "false" {
+		if animationFlagVal != "false" {
 			spinningComplete <- true
 		}
 
 		cleanResponse := removeLeadingNewLines(response)
-		typeWriterPrint(cleanResponse)
+
+		if animationFlagVal != "false" {
+			typeWriterPrint(cleanResponse)
+		} else {
+			fmt.Println(cleanResponse)
+		}
+
 		os.Exit(0)
 	}
 
@@ -123,11 +129,16 @@ func main() {
 
 	// Tell the spinner we are done
 
-	if spinFlagVal != "false" {
+	if animationFlagVal != "false" {
 		spinningComplete <- true
 	}
 
 	cleanResponse := removeLeadingNewLines(response)
-	typeWriterPrint(cleanResponse)
+
+	if animationFlagVal != "false" {
+		typeWriterPrint(cleanResponse)
+	} else {
+		fmt.Println(cleanResponse)
+	}
 
 }

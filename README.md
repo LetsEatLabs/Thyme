@@ -1,6 +1,6 @@
 # Thyme
 
-A CLI helper for interacting with the ChatGPT API. Capable of sending files using built-in prompts, examples (coming soon), and prompt-chains (coming soon). Also capable of simple direct queries.
+A CLI helper for interacting with the OpenAI API. Capable of sending files using built-in prompts, examples (coming soon), and prompt-chains (coming soon). Also capable of simple direct queries.
 
 ## Installation
 

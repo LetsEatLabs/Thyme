@@ -23,7 +23,7 @@ func typeWriterPrint(s string) {
 	newStr := re.ReplaceAllString(s, "")
 	for _, c := range newStr {
 		fmt.Printf("%c", c)
-		time.Sleep(time.Millisecond * 25)
+		time.Sleep(time.Millisecond * 20)
 	}
 
 	// One final space so we can separate lines printed in this fancy manner
