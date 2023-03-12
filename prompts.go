@@ -6,7 +6,7 @@ type Prompt struct {
 	Name        string
 	Text        string
 	Description string
-	Examples    map[string]PromptExample
+	Examples    map[int]PromptExample // Number them in order to be passed
 }
 
 type PromptExample struct {
@@ -15,6 +15,10 @@ type PromptExample struct {
 }
 
 ////////////
+
+// All prompts are defined in this function initPrompts()
+// We may end up moving prompts to JSON files in an embed.FS object if they get too large
+// But for now we do not see that being required.
 
 ////////////
 
