@@ -20,7 +20,9 @@ Flags:
     --animation false   Will omit the spinner and typewriter. 
                         Flag _must_ come first when used with the -q flag. 
                         "false" must be passed. 
-    -l                  List all available prompts (-p) and their descriptions. Will exit.  
+    -l                  List all available prompts (-p) and their descriptions. Will exit.
+    --text              Pass text to the prompt instead of a file. Used after -p.
+                        Anything after is passed. Example: thyme -p active_voice --text "blah"
 `
 
     fmt.Println(helpStr)
@@ -31,7 +33,8 @@ Flags:
 // name the final argument "input" and add it to the map.
 // If the user asks for help or fails to pass any
 // Display the help message and exit.
-func parseArgs() map[string]string {
+// Will return true if the user passed the --text flag
+func parseArgs() (map[string]string, bool) {
 
     if len(os.Args) == 1 {
         helpMessage()
@@ -56,11 +59,21 @@ func parseArgs() map[string]string {
         if i+2 > len(args) {
             result["input"] = args[i]
         } else {
-            result[args[i]] = args[i+1]
+
+            // If we pass --text, then we want everything after this to be the input
+            if args[i] != "--text" {
+                result[args[i]] = args[i+1]
+            } else {
+                result["input"] = strings.Join(args[i+1:], " ")
+                //fmt.Println(result)
+                return result, true
+            }
+
         }
 
     }
-    return result
+    //fmt.Println(result)
+    return result, false
 }
 
 /////
@@ -86,7 +99,7 @@ func main() {
     }
 
     // Parse arguements and load the prompts struct
-    arguments := parseArgs()
+    arguments, cli := parseArgs()
     prompts := initPrompts()
 
     // Make the spinner channel so we can tell when its done
@@ -133,8 +146,15 @@ func main() {
 
     // Get the value after the -p flag if we are not doing a -q request
     prompt := arguments["-p"]
+    var request string
 
-    request := readFileToString(arguments["input"])
+    // If the user passed --text then we want to use the text after the flag
+    if cli != true {
+        request = readFileToString(arguments["input"])
+    } else {
+        request = arguments["input"]
+    }
+
     response := callChatGPT(request, prompts[prompt].Text)
 
     // Tell the spinner we are done
