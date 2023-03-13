@@ -7,14 +7,21 @@ A CLI helper for interacting with the OpenAI API. Capable of sending files using
 ```bash
 ~ $: export OPENAI_API_KEY="<your_key_here>"
 ~ $: go build -o thyme *.go
-~ $: ./thyme --help
+~ $: ./thyme --help                                                                 
 
 Usage: thyme <flags> <input file>
 
 Flags:
-    -p <prompt>     The prompt to use for the GPT request
-    -q <question>   Ask a question and get a response (do not use with -p)
-    -h (--help)     Display this help message
+    -p <prompt>         The prompt to use for the GPT request
+    -q <question>       Ask a question and get a response (cannot be used with any other flags)
+    -h (--help)         Display this help message
+    --animation false   Will omit the spinner and typewriter. 
+                        Flag _must_ come first when used with the -q flag. 
+                        "false" must be passed. 
+    -l                  List all available prompts (-p) and their descriptions. Will exit.
+    --text              Pass text to the prompt instead of a file. Used after -p.
+                        Anything after is passed. Example: thyme -p active_voice --text "blah"
+
 ```
 
 ## Examples
