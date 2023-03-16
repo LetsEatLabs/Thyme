@@ -40,6 +40,12 @@ func initPrompts() map[string]Prompt {
 		Description: "This prompt takes a block of text and returns a version of the text in a more active voice.",
 	}
 
+	prompts["gender-neutral"] = Prompt{
+		Name:        "gender-neutral",
+		Text:        "Please examine the following text for gendered language and repeat the text back to be but with a non-gendered alternative language, without any explanations:",
+		Description: "This prompt takes a block of text and returns a version of the text with gendered language replaced with non-gendered alternatives.",
+	}
+
 	return prompts
 }
 
