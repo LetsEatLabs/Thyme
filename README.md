@@ -45,3 +45,7 @@ So, sit back folks and get ready for a real nail biter of a case. It's not often
 2. Stop by the gasoline store and buy tires.
 3. Purchase a whole salmon and eat it.
 ```
+
+## ToDo
+- [ ] Custom prompts used with files
+- [ ] Add prompt to summarize body of text
