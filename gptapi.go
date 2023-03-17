@@ -11,7 +11,7 @@ import (
 /////////////////
 
 // Call the ChatGPT API with passed string and using a prompt
-func callChatGPT(query string, prompt string) string {
+func callChatGPT(query string, prompt string, model string) string {
 	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
@@ -19,7 +19,7 @@ func callChatGPT(query string, prompt string) string {
 		// https://platform.openai.com/docs/guides/chat/chat-vs-completions
 
 		openai.ChatCompletionRequest{
-			Model: openai.GPT3Dot5Turbo,
+			Model: model,
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleSystem,
@@ -43,7 +43,7 @@ func callChatGPT(query string, prompt string) string {
 /////////////////
 
 // Call the ChatGPT API with passed string and no prompt
-func callChatGPTNoPrompt(query string) string {
+func callChatGPTNoPrompt(query string, model string) string {
 	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
@@ -51,7 +51,7 @@ func callChatGPTNoPrompt(query string) string {
 		// https://platform.openai.com/docs/guides/chat/chat-vs-completions
 
 		openai.ChatCompletionRequest{
-			Model: openai.GPT3Dot5Turbo,
+			Model: model,
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleUser,
