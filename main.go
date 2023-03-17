@@ -5,7 +5,6 @@ import (
     "fmt"
     "io/ioutil"
     "os"
-    "strings"
 )
 
 // Help message to display when the user asks for help or
@@ -16,66 +15,15 @@ Usage: thyme <flags> <input file>
 
 Flags:
     -p <prompt>         The prompt to use for the GPT request
-    -a <ask-question>       Ask a question and get a response (cannot be used with any other flags)
-    -h (--help)         Display this help message
-    --animation false   Will omit the spinner and typewriter. 
-                        Flag _must_ come first when used with the -q flag. 
-                        "false" must be passed. 
+    -a <ask-question>   Ask a question and get a response (cannot be used with any other flags)
+    -h                  Display this help message
+    -quiet              Will omit the spinner and typewriter. 
     -l                  List all available prompts (-p) and their descriptions. Will exit.
-    --text              Pass text to the prompt instead of a file. Used after -p.
+    -text               Pass text to the prompt instead of a file. Used after -p.
                         Anything after is passed. Example: thyme -p active_voice --text "blah"
 `
 
     fmt.Println(helpStr)
-}
-
-// Parses the command line arguments and returns them in a map
-// of flag:argument, if there are an uneven number of arguments then we
-// name the final argument "input" and add it to the map.
-// If the user asks for help or fails to pass any
-// Display the help message and exit.
-// Will return true if the user passed the --text flag
-func parseArgs() (map[string]string, bool) {
-
-    if len(os.Args) == 1 {
-        helpMessage()
-        os.Exit(0)
-    }
-
-    if os.Args[1] == "-h" || os.Args[1] == "--help" {
-        helpMessage()
-        os.Exit(0)
-    }
-
-    // If the user wants to see the prompts, print them and exit
-    if os.Args[1] == "-l" {
-        listAvailablePrompts()
-        os.Exit(0)
-    }
-
-    args := os.Args[1:]
-
-    result := make(map[string]string)
-    for i := 0; i < len(args); i += 2 {
-
-        if i+2 > len(args) {
-            result["input"] = args[i]
-        } else {
-
-            // If we pass --text, then we want everything after this to be the input
-            if args[i] != "--text" {
-                result[args[i]] = args[i+1]
-            } else {
-                result["input"] = strings.Join(args[i+1:], " ")
-                //fmt.Println(result)
-                return result, true
-            }
-
-        }
-
-    }
-    //fmt.Println(result)
-    return result, false
 }
 
 /////
@@ -93,6 +41,12 @@ func readFileToString(filename string) string {
 
 func main() {
 
+    // If not arguments passed, display help message and exit
+    if len(os.Args) == 1 {
+        helpMessage()
+        os.Exit(0)
+    }
+
     // If the env argument OPEN_AI_API key does not exist, exit
     // with an error message
     if os.Getenv("OPENAI_API_KEY") == "" {
@@ -101,13 +55,28 @@ func main() {
     }
 
     // Parse arguements and load the prompts struct
-    arguments, cli := parseArgs()
+    //arguments, _ := parseArgs()
     prompts := initPrompts()
 
     animationFlagVal := flag.Bool("quiet", false, "Will omit the spinner and typewriter.")
+    helpFlag := flag.Bool("h", false, "Display this help message")
+    listFlag := flag.Bool("l", false, "List all available prompts (-p) and their descriptions. Will exit.")
     questionFlag := flag.String("a", "", "Ask a question and get a response")
     promptFlag := flag.String("p", "", "The prompt to use for the GPT request")
+    textFlag := flag.String("text", "", "Pass text to the prompt instead of a file. Used after -p. Anything after is passed. Example: thyme -p active_voice --text \"blah\"")
     flag.Parse()
+
+    // If the user passed -h or --help, display the help message and exit
+    if *helpFlag == true {
+        helpMessage()
+        os.Exit(0)
+    }
+
+    // If the user passed -l, list the available prompts and exit
+    if *listFlag == true {
+        listAvailablePrompts()
+        os.Exit(0)
+    }
 
     // Make the spinner channel so we can tell when its done
     spinningComplete := make(chan bool)
@@ -117,7 +86,7 @@ func main() {
     }
 
     // -a flag will allow us to just ask a question and get a response
-    if questionFlag != nil {
+    if *questionFlag != "" {
         var request *string
         var response string
 
@@ -145,10 +114,10 @@ func main() {
     var request string
 
     // If the user passed --text then we want to use the text after the flag
-    if cli != true {
-        request = readFileToString(arguments["input"])
+    if *textFlag == "" {
+        request = readFileToString(flag.Args()[0])
     } else {
-        request = arguments["input"]
+        request = *textFlag
     }
 
     response := callChatGPT(request, prompts[*prompt].Text)
