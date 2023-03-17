@@ -5,6 +5,8 @@ import (
     "fmt"
     "io/ioutil"
     "os"
+
+    openai "github.com/sashabaranov/go-openai"
 )
 
 // Help message to display when the user asks for help or
@@ -64,7 +66,14 @@ func main() {
     questionFlag := flag.String("a", "", "Ask a question and get a response")
     promptFlag := flag.String("p", "", "The prompt to use for the GPT request")
     textFlag := flag.String("text", "", "Pass text to the prompt instead of a file. Used after -p. Anything after is passed. Example: thyme -p active_voice --text \"blah\"")
+    modelFlag := flag.String("model", "chatgpt", "The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt")
     flag.Parse()
+
+    // A map of string names to our models
+    models := map[string]string{
+        "chatgpt": openai.GPT3Dot5Turbo,
+        "gpt4":    openai.GPT4,
+    }
 
     // If the user passed -h or --help, display the help message and exit
     if *helpFlag == true {
@@ -86,12 +95,13 @@ func main() {
     }
 
     // -a flag will allow us to just ask a question and get a response
+    // Exit after we display the response
     if *questionFlag != "" {
         var request *string
         var response string
 
         request = questionFlag
-        response = callChatGPTNoPrompt(*request)
+        response = callChatGPTNoPrompt(*request, models[*modelFlag])
 
         // Tell the spinner we are done
         if *animationFlagVal == false {
@@ -113,14 +123,14 @@ func main() {
     prompt := promptFlag
     var request string
 
-    // If the user passed --text then we want to use the text after the flag
+    // If the user passed -text then we want to use the text after the flag
     if *textFlag == "" {
         request = readFileToString(flag.Args()[0])
     } else {
         request = *textFlag
     }
 
-    response := callChatGPT(request, prompts[*prompt].Text)
+    response := callChatGPT(request, prompts[*prompt].Text, models[*modelFlag])
 
     // Tell the spinner we are done
 
