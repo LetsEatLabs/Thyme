@@ -18,11 +18,12 @@ Usage: thyme <flags> <input file>
 Flags:
     -p <prompt>         The prompt to use for the GPT request
     -a <ask-question>   Ask a question and get a response (cannot be used with any other flags)
-    -h                  Display this help message
+    -h/--help           Display this help message
     -quiet              Will omit the spinner and typewriter. 
     -l                  List all available prompts (-p) and their descriptions. Will exit.
     -text               Pass text to the prompt instead of a file. Used after -p.
                         Anything after is passed. Example: thyme -p active_voice --text "blah"
+    -model              
 `
 
     fmt.Println(helpStr)
@@ -61,10 +62,9 @@ func main() {
     prompts := initPrompts()
 
     animationFlagVal := flag.Bool("quiet", false, "Will omit the spinner and typewriter.")
-    helpFlag := flag.Bool("h", false, "Display this help message")
     listFlag := flag.Bool("l", false, "List all available prompts (-p) and their descriptions. Will exit.")
     questionFlag := flag.String("a", "", "Ask a question and get a response")
-    promptFlag := flag.String("p", "", "The prompt to use for the GPT request")
+    promptFlag := flag.String("p", "", "The prompt to use for the GPT request: thyme -p active_voice my_blog_post.txt")
     textFlag := flag.String("text", "", "Pass text to the prompt instead of a file. Used after -p. Anything after is passed. Example: thyme -p active_voice --text \"blah\"")
     modelFlag := flag.String("model", "chatgpt", "The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt")
     flag.Parse()
@@ -73,12 +73,6 @@ func main() {
     models := map[string]string{
         "chatgpt": openai.GPT3Dot5Turbo,
         "gpt4":    openai.GPT4,
-    }
-
-    // If the user passed -h or --help, display the help message and exit
-    if *helpFlag == true {
-        helpMessage()
-        os.Exit(0)
     }
 
     // If the user passed -l, list the available prompts and exit
