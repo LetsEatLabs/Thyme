@@ -1,6 +1,7 @@
 package main
 
 import (
+    "flag"
     "fmt"
     "io/ioutil"
     "os"
@@ -15,7 +16,7 @@ Usage: thyme <flags> <input file>
 
 Flags:
     -p <prompt>         The prompt to use for the GPT request
-    -q <question>       Ask a question and get a response (cannot be used with any other flags)
+    -a <ask-question>       Ask a question and get a response (cannot be used with any other flags)
     -h (--help)         Display this help message
     --animation false   Will omit the spinner and typewriter. 
                         Flag _must_ come first when used with the -q flag. 
@@ -53,6 +54,7 @@ func parseArgs() (map[string]string, bool) {
     }
 
     args := os.Args[1:]
+
     result := make(map[string]string)
     for i := 0; i < len(args); i += 2 {
 
@@ -102,40 +104,34 @@ func main() {
     arguments, cli := parseArgs()
     prompts := initPrompts()
 
+    animationFlagVal := flag.Bool("quiet", false, "Will omit the spinner and typewriter.")
+    questionFlag := flag.String("a", "", "Ask a question and get a response")
+    promptFlag := flag.String("p", "", "The prompt to use for the GPT request")
+    flag.Parse()
+
     // Make the spinner channel so we can tell when its done
     spinningComplete := make(chan bool)
 
-    // Check if the user wants to not use the spinner via the --spinner flag
-    // User _must_ pass exactly "--spinner false" to disable the spinner
-    animationFlagVal := "true"
-    animationFlagVal, ok := arguments["--animation"]
-
-    if animationFlagVal != "false" {
+    if *animationFlagVal == false {
         go spinner(spinningComplete)
     }
 
-    // -q flag will allow us to just ask a question and get a response
-    _, ok = arguments["-q"]
-    if ok {
-        var request string
+    // -a flag will allow us to just ask a question and get a response
+    if questionFlag != nil {
+        var request *string
         var response string
 
-        if animationFlagVal != "false" {
-            request = strings.Join(os.Args[2:], " ")
-            response = callChatGPTNoPrompt(request)
-        } else {
-            request = strings.Join(os.Args[4:], " ")
-            response = callChatGPTNoPrompt(request)
-        }
+        request = questionFlag
+        response = callChatGPTNoPrompt(*request)
 
         // Tell the spinner we are done
-        if animationFlagVal != "false" {
+        if *animationFlagVal == false {
             spinningComplete <- true
         }
 
         cleanResponse := removeLeadingNewLines(response)
 
-        if animationFlagVal != "false" {
+        if *animationFlagVal == false {
             typeWriterPrint(cleanResponse)
         } else {
             fmt.Println(cleanResponse)
@@ -145,7 +141,7 @@ func main() {
     }
 
     // Get the value after the -p flag if we are not doing a -q request
-    prompt := arguments["-p"]
+    prompt := promptFlag
     var request string
 
     // If the user passed --text then we want to use the text after the flag
@@ -155,17 +151,17 @@ func main() {
         request = arguments["input"]
     }
 
-    response := callChatGPT(request, prompts[prompt].Text)
+    response := callChatGPT(request, prompts[*prompt].Text)
 
     // Tell the spinner we are done
 
-    if animationFlagVal != "false" {
+    if *animationFlagVal == false {
         spinningComplete <- true
     }
 
     cleanResponse := removeLeadingNewLines(response)
 
-    if animationFlagVal != "false" {
+    if *animationFlagVal == false {
         typeWriterPrint(cleanResponse)
     } else {
         fmt.Println(cleanResponse)
