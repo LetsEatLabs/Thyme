@@ -11,6 +11,8 @@ A CLI helper for interacting with the OpenAI API. Capable of sending files using
 Usage of thyme:
   -a string
         Ask a question and get a response
+  -c string
+        Pass a custom prompt to the GPT request. Cannot be used with -p.
   -l    List all available prompts (-p) and their descriptions. Will exit.
   -model string
         The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt (default "chatgpt")
@@ -47,5 +49,5 @@ So, sit back folks and get ready for a real nail biter of a case. It's not often
 ```
 
 ## ToDo
-- [ ] Custom prompts used with files
+- [x] Custom prompts used with files
 - [ ] Add prompt to summarize body of text
