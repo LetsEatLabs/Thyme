@@ -46,6 +46,12 @@ func initPrompts() map[string]Prompt {
 		Description: "This prompt takes a block of text and returns a version of the text with gendered language replaced with non-gendered alternatives.",
 	}
 
+	prompts["summarize-text"] = Prompt{
+		Name:        "summarize-text",
+		Text:        "Please summarize this text, giving a brief summary paragraph and then some applicable notable points",
+		Description: "This prompt takes a block of text and returns a summary paragraph and some notable points.",
+	}
+
 	return prompts
 }
 

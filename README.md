@@ -2,6 +2,9 @@
 
 A CLI helper for interacting with the OpenAI API. Capable of sending files using built-in prompts, examples (coming soon), and prompt-chains (coming soon). Also capable of simple direct queries.
 
+Useful as an inter-process tool, to use as a "function call" from your other applications. Or just use it as a CLI tool, you do you.
+
+
 ## Installation
 
 ```bash
@@ -33,17 +36,25 @@ Linux build: [thyme](https://static.letseatlabs.com/bin/thyme/linux/thyme)
 ## Examples
 
 ```bash
-~ $: thyme -q "Can you explain how a RICO case works in the
- voice of a baseball announcer"
-Welcome to today's game folks, and we've got a real interesting one for you. This matchup features a Racketeer Influenced and Corrupt Organizations Act case, or RICO for short. 
-
-Now, to break it down for you - this is when the government charges a group of individuals or an organization with committing a pattern of crimes. Think of it like a baseball team that's been caught cheating by stealing signs or juicing up their players with PEDs. 
-
-The goal of the government is to dismantle this criminal enterprise by taking down the key players and seizing their assets. Just like a manager would make strategic moves to bring in the right players to win the game, the government's attorneys and investigators have to work together to prove their case against the accused.
-
-Players in a RICO case can face hefty fines and prison time, just like a player caught using steroids would face suspension and tarnished reputation. 
-
-So, sit back folks and get ready for a real nail biter of a case. It's not often we see a RICO case on the field, but when we do, it's sure to be a game-changer.
+~ $: thyme -c "Please take the following text and return a JSON object of the different word types such as verb, nouns, etc. Please do not explain anything." -text "Today I went to the park and tomorrow I need to go to the zoo. After the store today I will eat a hamburger" 
+{                   
+  "noun": [
+    "park",
+    "tomorrow",
+    "zoo",
+    "store",
+    "hamburger"
+  ],
+  "verb": [
+    "went",
+    "need",
+    "will",
+    "eat"
+  ],
+  "adjective": [
+    "Today"
+  ]
+}
 ```
 
 ```bash
@@ -53,6 +64,18 @@ So, sit back folks and get ready for a real nail biter of a case. It's not often
 3. Purchase a whole salmon and eat it.
 ```
 
+```bash
+~ $: thyme -model gpt4 -p summarize-text README.md
+Thyme is a CLI helper for interacting with the OpenAI API, designed for sending files and simple direct queries. It can be used as an inter-process tool or a standalone CLI tool. The installation process requires the users to export their OpenAI API key and build the application. Examples provided demonstrate how to use Thyme for various purposes, such as asking a question and processing a text file to list the content.
+
+Notable points:
+1. CLI helper for OpenAI API interaction.
+2. Supports built-in prompts, examples, and prompt-chains.
+3. Can be used as an inter-process tool or standalone CLI tool.
+4. Requires OpenAI API key for installation.
+5. Provides usage examples and instructions in the documentation.
+```
+
 ## ToDo
 - [x] Custom prompts used with files
-- [ ] Add prompt to summarize body of text
+- [x] Add prompt to summarize body of text
