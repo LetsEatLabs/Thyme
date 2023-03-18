@@ -65,6 +65,7 @@ func main() {
     listFlag := flag.Bool("l", false, "List all available prompts (-p) and their descriptions. Will exit.")
     questionFlag := flag.String("a", "", "Ask a question and get a response")
     promptFlag := flag.String("p", "", "The prompt to use for the GPT request: thyme -p active_voice my_blog_post.txt")
+    customPromptFlag := flag.String("c", "", "Pass a custom prompt to the GPT request")
     textFlag := flag.String("text", "", "Pass text to the prompt instead of a file. Used after -p. Anything after is passed. Example: thyme -p active_voice --text \"blah\"")
     modelFlag := flag.String("model", "chatgpt", "The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt")
     flag.Parse()
@@ -79,6 +80,12 @@ func main() {
     if *listFlag == true {
         listAvailablePrompts()
         os.Exit(0)
+    }
+
+    // If the user passed _both_ -c and -p we need to tell them this is not supported
+    if *customPromptFlag != "" && *promptFlag != "" {
+        fmt.Println("You cannot use both -c and -p. Please use one or the other.")
+        os.Exit(1)
     }
 
     // Make the spinner channel so we can tell when its done
@@ -124,7 +131,15 @@ func main() {
         request = *textFlag
     }
 
-    response := callChatGPT(request, prompts[*prompt].Text, models[*modelFlag])
+    // Load the prompt from the list
+    // If we passed a -c flag, replace the prompt with the custom text
+    chosenPrompt := prompts[*prompt].Text
+
+    if *customPromptFlag != "" {
+        chosenPrompt = *customPromptFlag
+    }
+
+    response := callChatGPT(request, chosenPrompt, models[*modelFlag])
 
     // Tell the spinner we are done
 
