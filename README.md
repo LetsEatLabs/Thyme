@@ -25,6 +25,11 @@ Usage of thyme:
 
 ```
 
+## Downloads
+MacOS build: [thyme](https://static.letseatlabs.com/bin/thyme/macos/thyme)
+Linux build: [thyme](https://static.letseatlabs.com/bin/thyme/linux/thyme)
+
+
 ## Examples
 
 ```bash
