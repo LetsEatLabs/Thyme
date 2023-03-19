@@ -4,6 +4,16 @@ import (
 	"fmt"
 	"regexp"
 	"time"
+
+	"github.com/charmbracelet/lipgloss"
+)
+
+/////////////////
+// Lipgloss Styles
+
+var (
+	// Lipgloss style for the query waiting spinner
+	spinnerText = lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575"))
 )
 
 /////////////////
@@ -36,8 +46,8 @@ func typeWriterPrint(s string) {
 func spinner(spinningComplete chan bool) {
 	for {
 
-		for _, r := range `-\|/` {
-			fmt.Printf("\r%c Querying...", r)
+		for _, r := range `▁▂▃▄▅▆▇█▇▆▅▄▃▂▁` {
+			prettyPrintSpinner(fmt.Sprintf("\r%c Querying...", r))
 			time.Sleep(time.Millisecond * 100)
 		}
 
@@ -65,6 +75,13 @@ func listAvailablePrompts() {
 	for _, prompt := range prompts {
 		fmt.Printf("- %s: %s\n", prompt.Name, prompt.Description)
 	}
+}
+
+/////////////////
+
+// Pretty print the text green
+func prettyPrintSpinner(s string) {
+	fmt.Printf("%s", spinnerText.Render(s))
 }
 
 /////////////////
