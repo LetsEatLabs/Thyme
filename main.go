@@ -57,6 +57,16 @@ func main() {
         os.Exit(1)
     }
 
+    // Are we saving queries today?
+    sq := os.Getenv("THYME_QUERY_LOGGING")
+    saveQueries := false
+
+    if sq == "true" {
+        saveQueries = true
+    } else {
+        saveQueries = false
+    }
+
     // Parse arguements and load the prompts struct
     //arguments, _ := parseArgs()
     prompts := initPrompts()
@@ -117,6 +127,16 @@ func main() {
             fmt.Println(cleanResponse)
         }
 
+        qs := QuerySave{
+            Query:  *request,
+            Prompt: "",
+            Answer: cleanResponse,
+        }
+
+        if saveQueries {
+            saveGPT(qs)
+        }
+
         os.Exit(0)
     }
 
@@ -153,6 +173,16 @@ func main() {
         typeWriterPrint(cleanResponse)
     } else {
         fmt.Println(cleanResponse)
+    }
+
+    qs := QuerySave{
+        Query:  request,
+        Prompt: "",
+        Answer: cleanResponse,
+    }
+
+    if saveQueries {
+        saveGPT(qs)
     }
 
 }

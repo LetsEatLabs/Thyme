@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"time"
 
 	openai "github.com/sashabaranov/go-openai"
 )
@@ -88,3 +90,33 @@ func callGPT(query string) string {
 }
 
 /////////////////
+
+// Save the GPT Completions API response to a file
+// If the THYME_QUERY_LOGGING_DIR environment variable is not set, do nothing
+// Timestamp is when it saves, not when you send the query.
+func saveGPT(qs QuerySave) {
+	saveDir := os.Getenv("THYME_QUERY_LOGGING_DIR")
+
+	if saveDir == "" {
+		return
+	}
+
+	// Write the file as a json sting {'prompt': '...', 'query': '...', 'answer': ...}
+	// Filename is YYYY-MM-DD-HH-mm-SS-query.json
+	currentTime := time.Now()
+	year, month, day := currentTime.Date()
+	hour, min, sec := currentTime.Clock()
+	formattedTime := fmt.Sprintf("%d-%02d-%02d-%02d-%02d-%02d", year, month, day, hour, min, sec)
+	formattingTimeStamp := fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, min, sec)
+
+	filename := fmt.Sprintf("%s/%s-query.json", saveDir, formattedTime)
+
+	fileData := fmt.Sprintf("{'timestamp': '%s', 'prompt': '%s', 'query': '%s', 'answer': '%s'}", formattingTimeStamp, qs.Prompt, qs.Query, qs.Answer)
+
+	// Write the file
+	err := ioutil.WriteFile(filename, []byte(fileData), 0644)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+}

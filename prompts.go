@@ -14,6 +14,12 @@ type PromptExample struct {
 	Text string
 }
 
+type QuerySave struct {
+	Query  string
+	Prompt string
+	Answer string
+}
+
 ////////////
 
 // All prompts are defined in this function initPrompts()
