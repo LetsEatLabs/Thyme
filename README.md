@@ -28,6 +28,15 @@ Usage of thyme:
 
 ```
 
+You can enable saving the queries and results as JSON with the following environment variables:
+
+`THYME_QUERY_LOGGING_DIR='<full_path_to_dir>'`
+`THYME_QUERY_LOGGING='true'`
+
+If anything but 'true' is set for `THYME_QUERY_LOGGING` then it will not be logged.
+
+
+
 ## Downloads
 MacOS build: [thyme](https://static.letseatlabs.com/bin/thyme/macos/thyme)
 Linux build: [thyme](https://static.letseatlabs.com/bin/thyme/linux/thyme)
