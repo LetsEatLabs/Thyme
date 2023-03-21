@@ -169,20 +169,21 @@ func main() {
 
     cleanResponse := removeLeadingNewLines(response)
 
-    if *animationFlagVal == false {
-        typeWriterPrint(cleanResponse)
-    } else {
-        fmt.Println(cleanResponse)
-    }
-
+    // Save query before we display it incase user ctrl-c's and its still logged
     qs := QuerySave{
         Query:  request,
-        Prompt: "",
+        Prompt: chosenPrompt,
         Answer: cleanResponse,
     }
 
     if saveQueries {
         saveGPT(qs)
+    }
+
+    if *animationFlagVal == false {
+        typeWriterPrint(cleanResponse)
+    } else {
+        fmt.Println(cleanResponse)
     }
 
 }
