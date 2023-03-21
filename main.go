@@ -105,14 +105,40 @@ func main() {
         go spinner(spinningComplete)
     }
 
+    // Get the value after the -p flag
+    prompt := promptFlag
+    var request string
+    var chosenPrompt string
+
+    // If the user passed -text then we want to use the text after the flag
+    if *textFlag == "" && *questionFlag == "" {
+        request = readFileToString(flag.Args()[0])
+    } else if *textFlag == "" {
+        request = *questionFlag
+    } else {
+        request = *textFlag
+    }
+
+    // Load the prompt from the list
+    // If we passed a -c flag, replace the prompt with the custom text
+
+    if *customPromptFlag != "" {
+        chosenPrompt = *customPromptFlag
+    } else {
+        chosenPrompt = prompts[*prompt].Text
+    }
+
     // -a flag will allow us to just ask a question and get a response
     // Exit after we display the response
     if *questionFlag != "" {
-        var request *string
+
         var response string
 
-        request = questionFlag
-        response = callChatGPTNoPrompt(*request, models[*modelFlag])
+        if *promptFlag != "" && *customPromptFlag != "" {
+            response = callChatGPTNoPrompt(request, models[*modelFlag])
+        } else {
+            response = callChatGPT(request, chosenPrompt, models[*modelFlag])
+        }
 
         // Tell the spinner we are done
         if *animationFlagVal == false {
@@ -121,15 +147,10 @@ func main() {
 
         cleanResponse := removeLeadingNewLines(response)
 
-        if *animationFlagVal == false {
-            typeWriterPrint(cleanResponse)
-        } else {
-            fmt.Println(cleanResponse)
-        }
-
+        // Save query before we display it incase user ctrl-c's and its still logged
         qs := QuerySave{
-            Query:  *request,
-            Prompt: "",
+            Query:  request,
+            Prompt: chosenPrompt,
             Answer: cleanResponse,
         }
 
@@ -137,26 +158,13 @@ func main() {
             saveGPT(qs)
         }
 
+        if *animationFlagVal == false {
+            typeWriterPrint(cleanResponse)
+        } else {
+            fmt.Println(cleanResponse)
+        }
+
         os.Exit(0)
-    }
-
-    // Get the value after the -p flag if we are not doing a -q request
-    prompt := promptFlag
-    var request string
-
-    // If the user passed -text then we want to use the text after the flag
-    if *textFlag == "" {
-        request = readFileToString(flag.Args()[0])
-    } else {
-        request = *textFlag
-    }
-
-    // Load the prompt from the list
-    // If we passed a -c flag, replace the prompt with the custom text
-    chosenPrompt := prompts[*prompt].Text
-
-    if *customPromptFlag != "" {
-        chosenPrompt = *customPromptFlag
     }
 
     response := callChatGPT(request, chosenPrompt, models[*modelFlag])
