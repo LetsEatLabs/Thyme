@@ -78,6 +78,7 @@ func main() {
     customPromptFlag := flag.String("c", "", "Pass a custom prompt to the GPT request. Cannot be used with -p.")
     textFlag := flag.String("text", "", "Pass text to the prompt instead of a file. Used after -p. Anything after is passed. Example: thyme -p active_voice --text \"blah\"")
     modelFlag := flag.String("model", "chatgpt", "The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt")
+    chatFlag := flag.Bool("chat", false, "Start a chat session with the GPT model")
     flag.Parse()
 
     // A map of string names to our models
@@ -89,6 +90,11 @@ func main() {
     // If the user passed -l, list the available prompts and exit
     if *listFlag == true {
         listAvailablePrompts()
+        os.Exit(0)
+    }
+
+    if *chatFlag == true {
+        gptChat()
         os.Exit(0)
     }
 
