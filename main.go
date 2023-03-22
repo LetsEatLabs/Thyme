@@ -165,7 +165,7 @@ func main() {
         }
 
         if *animationFlagVal == false {
-            typeWriterPrint(cleanResponse)
+            typeWriterPrint(cleanResponse, true)
         } else {
             fmt.Println(cleanResponse)
         }
@@ -195,7 +195,7 @@ func main() {
     }
 
     if *animationFlagVal == false {
-        typeWriterPrint(cleanResponse)
+        typeWriterPrint(cleanResponse, true)
     } else {
         fmt.Println(cleanResponse)
     }

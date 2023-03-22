@@ -103,8 +103,9 @@ func gptChat() {
 	fmt.Println("---------------------")
 
 	for {
-		fmt.Print("-> ")
+		prettyPrintChatArrow("-> ")
 		text, _ := reader.ReadString('\n')
+		fmt.Println("---")
 		// convert CRLF to LF
 		text = strings.Replace(text, "\n", "", -1)
 		messages = append(messages, openai.ChatCompletionMessage{
@@ -130,7 +131,7 @@ func gptChat() {
 			Role:    openai.ChatMessageRoleAssistant,
 			Content: content,
 		})
-		fmt.Println(content)
+		typeWriterPrint(content+"\n", false)
 	}
 }
 

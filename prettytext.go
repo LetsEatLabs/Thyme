@@ -27,7 +27,7 @@ func removeLeadingNewLines(s string) string {
 /////////////////
 
 // Prints text so that it looks like a typewriter
-func typeWriterPrint(s string) {
+func typeWriterPrint(s string, space bool) {
 
 	re := regexp.MustCompile(`(?m:!^)[^\S\r\n\t]{2,}`)
 	newStr := re.ReplaceAllString(s, "")
@@ -36,8 +36,10 @@ func typeWriterPrint(s string) {
 		time.Sleep(time.Millisecond * 20)
 	}
 
-	// One final space so we can separate lines printed in this fancy manner
-	fmt.Printf(" ")
+	if space {
+		// One final space so we can separate lines printed in this fancy manner
+		fmt.Printf(" ")
+	}
 }
 
 /////////////////
@@ -81,6 +83,11 @@ func listAvailablePrompts() {
 
 // Pretty print the text green
 func prettyPrintSpinner(s string) {
+	fmt.Printf("%s", spinnerText.Render(s))
+}
+
+// Pretty print the text green
+func prettyPrintChatArrow(s string) {
 	fmt.Printf("%s", spinnerText.Render(s))
 }
 
