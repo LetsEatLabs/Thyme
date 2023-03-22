@@ -39,6 +39,8 @@ func typeWriterPrint(s string, space bool) {
 	if space {
 		// One final space so we can separate lines printed in this fancy manner
 		fmt.Printf(" ")
+	} else {
+		fmt.Printf("\n")
 	}
 }
 
