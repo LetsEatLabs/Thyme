@@ -95,7 +95,7 @@ func callGPT(query string) string {
 /////////////////
 
 // Handle a chat interaction with the GPT API
-func gptChat() {
+func gptChat(model string) {
 	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 	messages := make([]openai.ChatCompletionMessage, 0)
 	reader := bufio.NewReader(os.Stdin)
@@ -116,7 +116,7 @@ func gptChat() {
 		resp, err := client.CreateChatCompletion(
 			context.Background(),
 			openai.ChatCompletionRequest{
-				Model:    openai.GPT3Dot5Turbo,
+				Model:    model,
 				Messages: messages,
 			},
 		)

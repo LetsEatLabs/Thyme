@@ -94,7 +94,7 @@ func main() {
     }
 
     if *chatFlag == true {
-        gptChat()
+        gptChat(models[*modelFlag])
         os.Exit(0)
     }
 
