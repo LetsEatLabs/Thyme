@@ -34,6 +34,15 @@ You can enable saving the queries and results as JSON with the following environ
 - `THYME_QUERY_LOGGING_DIR='<full_path_to_dir>'`
 - `THYME_QUERY_LOGGING='true'`
 
+The program accesses the following environment variables
+
+| Variable | Use | Example | Required | 
+| --- | --- | --- | --- |
+| `OPENAI_API_KEY` | The OpenAI API key | `sk-1234567890` | Yes |
+| `KAGI_API_KEY` | The Kagi API key | `AAA_Keysomething12389asd` | Yes |
+| `THYME_QUERY_LOGGING` | Whether to log the queries and results | `true` | No |
+| `THYME_QUERY_LOGGING_DIR` | The directory to save the query logs to. Currenly only supports OpenAI | `/home/user/.thyme/logs` | No |
+
 If anything but 'true' is set for `THYME_QUERY_LOGGING` then it will not be logged.
 
 The models we currently support interacting with are as follows: 
