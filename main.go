@@ -78,7 +78,8 @@ func main() {
     customPromptFlag := flag.String("c", "", "Pass a custom prompt to the GPT request. Cannot be used with -p.")
     modelFlag := flag.String("model", "", "The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt")
     chatFlag := flag.Bool("chat", false, "Start a chat session with the GPT model")
-    kagiFlag := flag.Bool("ksum", false, "Use the Kagi Universal Summarizer API. Pass the URL to summarize after -a.")
+    kagiFlag := flag.Bool("ksum", false, "Use the Kagi Universal Summarizer API. Pass the URL to summarize after -a. Also works with -model")
+    openAIFlag := flag.Bool("oa", false, "Use the OpenAI API.")
     fileFlag := flag.String("file", "", "Pass file to the prompt. Cannot be used with -a.")
     flag.Parse()
 
@@ -125,7 +126,10 @@ func main() {
     // Make the spinner channel so we can tell when its done
     spinningComplete := make(chan bool)
 
-    // Handle the Kagi API first as OpenAI is current default
+    // Handle requests. This is the order flags are checked in. Each one will exit
+    // So we only ever use one call per execution.
+
+    // Handle a Kagi API
     if *kagiFlag == true {
 
         // Start the spinner
@@ -167,54 +171,89 @@ func main() {
 
     }
 
-    // Enable the spinner if it is not disabled
-    if *animationFlagVal == false {
-        go spinner(spinningComplete)
-    }
+    // Handle an OpenAI Request
+    if *openAIFlag == true {
 
-    // Get the value after the -p flag
-    prompt := promptFlag
-    var request string
-    var chosenPrompt string
-
-    // If the user passed -text then we want to use the text after the flag
-    if *fileFlag != "" {
-        request = readFileToString(*fileFlag)
-    } else if *questionFlag != "" {
-        request = *questionFlag
-    }
-
-    // Load the prompt from the list
-    // If we passed a -c flag, replace the prompt with the custom text
-
-    if *customPromptFlag != "" {
-        chosenPrompt = *customPromptFlag
-    } else {
-        chosenPrompt = prompts[*prompt].Text
-    }
-
-    // We default to chatgpt, but if the user passes a different one we use that
-    var engineChoice string
-
-    if *modelFlag != "" {
-        engineChoice = openAIModels[*modelFlag]
-    } else {
-        engineChoice = "chatgpt"
-    }
-
-    // -a flag will allow us to just ask a question and get a response
-    // Exit after we display the response
-    if *questionFlag != "" {
-
-        var response string
-
-        if *promptFlag != "" && *customPromptFlag != "" {
-            response = callChatGPTNoPrompt(request, engineChoice)
-        } else {
-            response = callChatGPT(request, chosenPrompt, engineChoice)
+        // Enable the spinner if it is not disabled
+        if *animationFlagVal == false {
+            go spinner(spinningComplete)
         }
 
+        // Get the value after the -p flag
+        prompt := promptFlag
+        var request string
+        var chosenPrompt string
+
+        // If the user passed -text then we want to use the text after the flag
+        if *fileFlag != "" {
+            request = readFileToString(*fileFlag)
+        } else if *questionFlag != "" {
+            request = *questionFlag
+        }
+
+        // Load the prompt from the list
+        // If we passed a -c flag, replace the prompt with the custom text
+
+        if *customPromptFlag != "" {
+            chosenPrompt = *customPromptFlag
+        } else {
+            chosenPrompt = prompts[*prompt].Text
+        }
+
+        // We default to chatgpt, but if the user passes a different one we use that
+        var engineChoice string
+
+        if *modelFlag != "" {
+            engineChoice = openAIModels[*modelFlag]
+        } else {
+            engineChoice = "chatgpt"
+        }
+
+        fmt.Println(engineChoice, *modelFlag)
+
+        // -a flag will allow us to just ask a question and get a response
+        // Exit after we display the response
+        if *questionFlag != "" {
+
+            var response string
+
+            if *promptFlag != "" && *customPromptFlag != "" {
+                response = callChatGPTNoPrompt(request, openAIModels[engineChoice])
+            } else {
+                response = callChatGPT(request, chosenPrompt, openAIModels[engineChoice])
+            }
+
+            // Tell the spinner we are done
+            if *animationFlagVal == false {
+                spinningComplete <- true
+            }
+
+            cleanResponse := removeLeadingNewLines(response)
+
+            // Save query before we display it incase user ctrl-c's and its still logged
+            qs := QuerySave{
+                Query:  request,
+                Prompt: chosenPrompt,
+                Answer: cleanResponse,
+            }
+
+            if saveQueries {
+                saveGPT(qs)
+            }
+
+            if *animationFlagVal == false {
+                typeWriterPrint(cleanResponse, true)
+            } else {
+                fmt.Println(cleanResponse)
+            }
+
+            os.Exit(0)
+        }
+
+        response := callChatGPT(request, chosenPrompt, openAIModels[engineChoice])
+
         // Tell the spinner we are done
+
         if *animationFlagVal == false {
             spinningComplete <- true
         }
@@ -238,34 +277,5 @@ func main() {
             fmt.Println(cleanResponse)
         }
 
-        os.Exit(0)
     }
-
-    response := callChatGPT(request, chosenPrompt, engineChoice)
-
-    // Tell the spinner we are done
-
-    if *animationFlagVal == false {
-        spinningComplete <- true
-    }
-
-    cleanResponse := removeLeadingNewLines(response)
-
-    // Save query before we display it incase user ctrl-c's and its still logged
-    qs := QuerySave{
-        Query:  request,
-        Prompt: chosenPrompt,
-        Answer: cleanResponse,
-    }
-
-    if saveQueries {
-        saveGPT(qs)
-    }
-
-    if *animationFlagVal == false {
-        typeWriterPrint(cleanResponse, true)
-    } else {
-        fmt.Println(cleanResponse)
-    }
-
 }
