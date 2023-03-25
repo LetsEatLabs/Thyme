@@ -78,7 +78,7 @@ func main() {
     customPromptFlag := flag.String("c", "", "Pass a custom prompt to the GPT request. Cannot be used with -p.")
     modelFlag := flag.String("model", "", "The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt")
     chatFlag := flag.Bool("chat", false, "Start a chat session with the GPT model")
-    kagiFlag := flag.String("ksum", "url", "Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model")
+    kagiFlag := flag.String("ksum", "", "Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model")
     openAIFlag := flag.Bool("oa", false, "Use the OpenAI API.")
     fileFlag := flag.String("file", "", "Pass file to the prompt. Cannot be used with -a.")
     flag.Parse()
@@ -110,17 +110,6 @@ func main() {
     if *fileFlag != "" && *questionFlag != "" {
         fmt.Println("You cannot use both -file and -a. Please use one or the other.")
         os.Exit(1)
-    }
-
-    // If they passed both a -file and -a we need to tell them no
-    if *fileFlag == "" && *questionFlag == "" {
-        fmt.Println("You must pass either -file or -a. See -h for more info.")
-        os.Exit(1)
-    }
-
-    if *chatFlag == true {
-        gptChat(openAIModels[*modelFlag])
-        os.Exit(0)
     }
 
     // Make the spinner channel so we can tell when its done
@@ -174,6 +163,21 @@ func main() {
     // Handle an OpenAI Request
     if *openAIFlag == true {
 
+        // We default to chatgpt, but if the user passes a different one we use that
+        var engineChoice string
+
+        if *modelFlag != "" {
+            engineChoice = *modelFlag
+        } else {
+            engineChoice = "chatgpt"
+        }
+
+        // If the user wishes to chat, lets do that
+        if *chatFlag == true {
+            gptChat(openAIModels[engineChoice])
+            os.Exit(0)
+        }
+
         // Enable the spinner if it is not disabled
         if *animationFlagVal == false {
             go spinner(spinningComplete)
@@ -198,15 +202,6 @@ func main() {
             chosenPrompt = *customPromptFlag
         } else {
             chosenPrompt = prompts[*prompt].Text
-        }
-
-        // We default to chatgpt, but if the user passes a different one we use that
-        var engineChoice string
-
-        if *modelFlag != "" {
-            engineChoice = *modelFlag
-        } else {
-            engineChoice = "chatgpt"
         }
 
         // -a flag will allow us to just ask a question and get a response
