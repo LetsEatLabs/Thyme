@@ -77,7 +77,7 @@ func main() {
     promptFlag := flag.String("p", "", "The prompt to use for the GPT request: thyme -p active_voice my_blog_post.txt")
     customPromptFlag := flag.String("c", "", "Pass a custom prompt to the GPT request. Cannot be used with -p.")
     modelFlag := flag.String("model", "", "The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt")
-    chatFlag := flag.Bool("chat", false, "Start a chat session with the GPT model")
+    chatFlag := flag.Bool("chat", false, "Start a chat session with the GPT model. Must be used with -oa")
     kagiFlag := flag.String("ksum", "", "Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model")
     openAIFlag := flag.Bool("oa", false, "Use the OpenAI API.")
     fileFlag := flag.String("file", "", "Pass file to the prompt. Cannot be used with -a.")
