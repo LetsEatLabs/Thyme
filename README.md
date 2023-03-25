@@ -9,14 +9,16 @@ Usage of thyme:
   -c string
         Pass a custom prompt to the GPT request. Cannot be used with -p.
   -chat
-        Start a chat session with the GPT model
+        Start a chat session with the GPT model. Must be used with -oa
   -file string
         Pass file to the prompt. Cannot be used with -a.
-  -ksum
-        Use the Kagi Universal Summarizer API. Pass the URL to summarize after -a.
+  -ksum string
+        Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model
   -l    List all available prompts (-p) and their descriptions. Will exit.
   -model string
-        The model to use for the GPT request if you wish to not use the default
+        The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt
+  -oa
+        Use the OpenAI API.
   -p string
         The prompt to use for the GPT request: thyme -p active_voice my_blog_post.txt
   -quiet
