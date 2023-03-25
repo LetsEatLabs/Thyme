@@ -2,11 +2,6 @@
 
 A CLI helper for interacting with multiple AI/LLM APIs. Capable of sending files using built-in prompts, examples (coming soon), and prompt-chains (coming soon). Also capable of simple direct queries and sending files.
 
-Useful as an inter-process tool, to use as a "function call" from your other applications. Or just use it as a CLI tool, you do you.
-
-
-## Installation
-
 ```bash
 Usage of thyme:
   -a string
@@ -28,6 +23,9 @@ Usage of thyme:
         Will omit the spinner and typewriter.
 
 ```
+
+
+## Installation
 
 You can enable saving the queries and results as JSON with the following environment variables:
 
@@ -53,6 +51,25 @@ The models we currently support interacting with are as follows:
 | `gpt4` | OpenAI | No |
 | `agnes` | Kagi | Yes |
 | `daphne` | Kagi | No |
+
+## Use
+
+### Interprocess
+
+The most common use cases for this application are likely to be quick answers to questions or the chat interface. But this was also designed to be used between processes, so you can use it as a "function call" from yosur other applications. By default the application has some animations and formatting, but if you pass the `-quiet` flag then this is omitted and you are simply returned the response.
+
+### Built-in Prompts
+
+To view the list of current built in prompts, please use `thyme -l`.
+
+### Chat
+
+To chat with any of the Open AI models, you can use the `-chat` flag.
+
+### Summarize large bodies of text
+
+You can utilize the Kagi Universal Summarizer API to summarize large bodies of text with `-ksum`. Kagi currently only supports URLs and raw text right now, but they plan to support file upload in the future.
+
 
 ## Examples
 
