@@ -165,3 +165,7 @@ Using the Kagi text summary API to summarize the [599 word sentence](https://nat
 ~ $: thyme -ksum text -a "[OMITTED FOR BREVITY]"
 The document describes the author's experience of revisiting the various rooms he had slept in throughout his life in a long dream. He describes the different types of rooms he had slept in, such as rooms in winter where he would feel warm and cozy, and rooms in summer where he would feel a part of the warm evening. He also describes specific rooms, such as the Louis XVI room, which was so cheerful that he could never feel unhappy in it, and a little room with a high ceiling and mahogany walls, where he felt anxious and uncomfortable. The author describes how his mind would elongate itself upwards to take on the exact shape of the room, and how he would spend anxious nights until he became accustomed to the room and its surroundings. The author also describes how his perception of the rooms changed over time, as he became accustomed to them and the unfamiliar became familiar. Overall, the document is a reflection on the power of memory and how our experiences shape our perceptions of the world around us.
 ```
+
+## External Resources
+- [OpenAI Website](https://platform.openai.com/docs)
+- [Kagi Universal Translator Website](https://kagi.com/summarizer/index.html)
