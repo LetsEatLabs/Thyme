@@ -204,12 +204,10 @@ func main() {
         var engineChoice string
 
         if *modelFlag != "" {
-            engineChoice = openAIModels[*modelFlag]
+            engineChoice = *modelFlag
         } else {
             engineChoice = "chatgpt"
         }
-
-        fmt.Println(engineChoice, *modelFlag)
 
         // -a flag will allow us to just ask a question and get a response
         // Exit after we display the response
