@@ -76,16 +76,22 @@ func main() {
     questionFlag := flag.String("a", "", "Ask a question and get a response")
     promptFlag := flag.String("p", "", "The prompt to use for the GPT request: thyme -p active_voice my_blog_post.txt")
     customPromptFlag := flag.String("c", "", "Pass a custom prompt to the GPT request. Cannot be used with -p.")
-    textFlag := flag.String("text", "", "Pass text to the prompt instead of a file. Used after -p. Anything after is passed. Example: thyme -p active_voice --text \"blah\"")
-    modelFlag := flag.String("model", "chatgpt", "The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt")
-    chatFlag := flag.Bool("chat", false, "Start a chat session with the GPT model")
-    kagiFlag := flag.Bool("ksum", false, "Use the Kagi Universal Summarizer API")
+    modelFlag := flag.String("model", "", "The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt")
+    chatFlag := flag.Bool("chat", false, "Start a chat session with the GPT model. Must be used with -oa")
+    kagiFlag := flag.String("ksum", "", "Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model")
+    openAIFlag := flag.Bool("oa", false, "Use the OpenAI API.")
+    fileFlag := flag.String("file", "", "Pass file to the prompt. Cannot be used with -a.")
     flag.Parse()
 
     // A map of string names to our models
     openAIModels := map[string]string{
         "chatgpt": openai.GPT3Dot5Turbo,
         "gpt4":    openai.GPT4,
+    }
+
+    kagiModels := map[string]string{
+        "agnes":  "agnes",
+        "daphne": "daphne",
     }
 
     // If the user passed -l, list the available prompts and exit
@@ -100,16 +106,20 @@ func main() {
         os.Exit(1)
     }
 
-    if *chatFlag == true {
-        gptChat(openAIModels[*modelFlag])
-        os.Exit(0)
+    // If they passed both a file an a question tell them no
+    if *fileFlag != "" && *questionFlag != "" {
+        fmt.Println("You cannot use both -file and -a. Please use one or the other.")
+        os.Exit(1)
     }
 
     // Make the spinner channel so we can tell when its done
     spinningComplete := make(chan bool)
 
-    // Handle the Kagi API first as OpenAI is current default
-    if *kagiFlag == true {
+    // Handle requests. This is the order flags are checked in. Each one will exit
+    // So we only ever use one call per execution.
+
+    // Handle a Kagi API
+    if *kagiFlag != "" {
 
         // Start the spinner
         if *animationFlagVal == false {
@@ -117,17 +127,26 @@ func main() {
         }
 
         if *questionFlag == "" {
-            fmt.Println("Please pass a URL after -a: thyme -ksum -a https://a.com")
+            fmt.Println("Please pass either a URL or text after -a: thyme -ksum -a https://a.com")
             os.Exit(1)
         }
 
-        kagi := KagiRequest{
-            Engine: "agnes",
-            Input:  *questionFlag,
-            Type:   "url",
+        // We default to agnes, but if the user passes a different one we use that
+        var engineChoice string
+
+        if *modelFlag != "" {
+            engineChoice = kagiModels[*modelFlag]
+        } else {
+            engineChoice = "agnes"
         }
 
-        response := makeURLSummaryRequest(kagi)
+        kagi := KagiRequest{
+            Engine: engineChoice,
+            Input:  *questionFlag,
+            Type:   *kagiFlag,
+        }
+
+        response := makeSummaryRequest(kagi)
 
         // Tell the spinner we are done and print the response
         if *animationFlagVal == false {
@@ -141,47 +160,93 @@ func main() {
 
     }
 
-    // Enable the spinner if it is not disabled
-    if *animationFlagVal == false {
-        go spinner(spinningComplete)
-    }
+    // Handle an OpenAI Request
+    if *openAIFlag == true {
 
-    // Get the value after the -p flag
-    prompt := promptFlag
-    var request string
-    var chosenPrompt string
+        // We default to chatgpt, but if the user passes a different one we use that
+        var engineChoice string
 
-    // If the user passed -text then we want to use the text after the flag
-    if *textFlag == "" && *questionFlag == "" {
-        request = readFileToString(flag.Args()[0])
-    } else if *textFlag == "" {
-        request = *questionFlag
-    } else {
-        request = *textFlag
-    }
-
-    // Load the prompt from the list
-    // If we passed a -c flag, replace the prompt with the custom text
-
-    if *customPromptFlag != "" {
-        chosenPrompt = *customPromptFlag
-    } else {
-        chosenPrompt = prompts[*prompt].Text
-    }
-
-    // -a flag will allow us to just ask a question and get a response
-    // Exit after we display the response
-    if *questionFlag != "" {
-
-        var response string
-
-        if *promptFlag != "" && *customPromptFlag != "" {
-            response = callChatGPTNoPrompt(request, openAIModels[*modelFlag])
+        if *modelFlag != "" {
+            engineChoice = *modelFlag
         } else {
-            response = callChatGPT(request, chosenPrompt, openAIModels[*modelFlag])
+            engineChoice = "chatgpt"
         }
 
+        // If the user wishes to chat, lets do that
+        if *chatFlag == true {
+            gptChat(openAIModels[engineChoice])
+            os.Exit(0)
+        }
+
+        // Enable the spinner if it is not disabled
+        if *animationFlagVal == false {
+            go spinner(spinningComplete)
+        }
+
+        // Get the value after the -p flag
+        prompt := promptFlag
+        var request string
+        var chosenPrompt string
+
+        // If the user passed -text then we want to use the text after the flag
+        if *fileFlag != "" {
+            request = readFileToString(*fileFlag)
+        } else if *questionFlag != "" {
+            request = *questionFlag
+        }
+
+        // Load the prompt from the list
+        // If we passed a -c flag, replace the prompt with the custom text
+
+        if *customPromptFlag != "" {
+            chosenPrompt = *customPromptFlag
+        } else {
+            chosenPrompt = prompts[*prompt].Text
+        }
+
+        // -a flag will allow us to just ask a question and get a response
+        // Exit after we display the response
+        if *questionFlag != "" {
+
+            var response string
+
+            if *promptFlag != "" && *customPromptFlag != "" {
+                response = callChatGPTNoPrompt(request, openAIModels[engineChoice])
+            } else {
+                response = callChatGPT(request, chosenPrompt, openAIModels[engineChoice])
+            }
+
+            // Tell the spinner we are done
+            if *animationFlagVal == false {
+                spinningComplete <- true
+            }
+
+            cleanResponse := removeLeadingNewLines(response)
+
+            // Save query before we display it incase user ctrl-c's and its still logged
+            qs := QuerySave{
+                Query:  request,
+                Prompt: chosenPrompt,
+                Answer: cleanResponse,
+            }
+
+            if saveQueries {
+                saveGPT(qs)
+            }
+
+            if *animationFlagVal == false {
+                typeWriterPrint(cleanResponse, true)
+            } else {
+                fmt.Println(cleanResponse)
+            }
+
+            os.Exit(0)
+        }
+
+        response := callChatGPT(request, chosenPrompt, openAIModels[engineChoice])
+
         // Tell the spinner we are done
+
         if *animationFlagVal == false {
             spinningComplete <- true
         }
@@ -205,34 +270,5 @@ func main() {
             fmt.Println(cleanResponse)
         }
 
-        os.Exit(0)
     }
-
-    response := callChatGPT(request, chosenPrompt, openAIModels[*modelFlag])
-
-    // Tell the spinner we are done
-
-    if *animationFlagVal == false {
-        spinningComplete <- true
-    }
-
-    cleanResponse := removeLeadingNewLines(response)
-
-    // Save query before we display it incase user ctrl-c's and its still logged
-    qs := QuerySave{
-        Query:  request,
-        Prompt: chosenPrompt,
-        Answer: cleanResponse,
-    }
-
-    if saveQueries {
-        saveGPT(qs)
-    }
-
-    if *animationFlagVal == false {
-        typeWriterPrint(cleanResponse, true)
-    } else {
-        fmt.Println(cleanResponse)
-    }
-
 }
