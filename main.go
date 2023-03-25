@@ -76,10 +76,10 @@ func main() {
     questionFlag := flag.String("a", "", "Ask a question and get a response")
     promptFlag := flag.String("p", "", "The prompt to use for the GPT request: thyme -p active_voice my_blog_post.txt")
     customPromptFlag := flag.String("c", "", "Pass a custom prompt to the GPT request. Cannot be used with -p.")
-    textFlag := flag.String("text", "", "Pass text to the prompt instead of a file. Used after -p. Anything after is passed. Example: thyme -p active_voice --text \"blah\"")
     modelFlag := flag.String("model", "chatgpt", "The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt")
     chatFlag := flag.Bool("chat", false, "Start a chat session with the GPT model")
-    kagiFlag := flag.Bool("ksum", false, "Use the Kagi Universal Summarizer API")
+    kagiFlag := flag.Bool("ksum", false, "Use the Kagi Universal Summarizer API. Pass the URL to summarize after -a.")
+    fileFlag := flag.String("file", "", "Pass file to the prompt. Cannot be used with -a.")
     flag.Parse()
 
     // A map of string names to our models
@@ -97,6 +97,18 @@ func main() {
     // If the user passed _both_ -c and -p we need to tell them this is not supported
     if *customPromptFlag != "" && *promptFlag != "" {
         fmt.Println("You cannot use both -c and -p. Please use one or the other.")
+        os.Exit(1)
+    }
+
+    // If they passed both a file an a question tell them no
+    if *fileFlag != "" && *questionFlag != "" {
+        fmt.Println("You cannot use both -file and -a. Please use one or the other.")
+        os.Exit(1)
+    }
+
+    // If they passed both a -file and -a we need to tell them no
+    if *fileFlag == "" && *questionFlag == "" {
+        fmt.Println("You must pass either -file or -a. See -h for more info.")
         os.Exit(1)
     }
 
@@ -152,12 +164,10 @@ func main() {
     var chosenPrompt string
 
     // If the user passed -text then we want to use the text after the flag
-    if *textFlag == "" && *questionFlag == "" {
-        request = readFileToString(flag.Args()[0])
-    } else if *textFlag == "" {
+    if *fileFlag != "" {
+        request = readFileToString(*fileFlag)
+    } else if *questionFlag != "" {
         request = *questionFlag
-    } else {
-        request = *textFlag
     }
 
     // Load the prompt from the list

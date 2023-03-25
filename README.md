@@ -1,6 +1,6 @@
 # Thyme
 
-A CLI helper for interacting with the OpenAI API. Capable of sending files using built-in prompts, examples (coming soon), and prompt-chains (coming soon). Also capable of simple direct queries.
+A CLI helper for interacting with multiple AI/LLM APIs. Capable of sending files using built-in prompts, examples (coming soon), and prompt-chains (coming soon). Also capable of simple direct queries and sending files.
 
 Useful as an inter-process tool, to use as a "function call" from your other applications. Or just use it as a CLI tool, you do you.
 
@@ -8,13 +8,17 @@ Useful as an inter-process tool, to use as a "function call" from your other app
 ## Installation
 
 ```bash
-Usage of /var/folders/6y/lfjvkrpn2yd66gg1j03qg7jm0000gn/T/go-build3081319399/b001/exe/gptapi:
+Usage of thyme:
   -a string
         Ask a question and get a response
   -c string
         Pass a custom prompt to the GPT request. Cannot be used with -p.
   -chat
         Start a chat session with the GPT model
+  -file string
+        Pass file to the prompt. Cannot be used with -a.
+  -ksum
+        Use the Kagi Universal Summarizer API. Pass the URL to summarize after -a.
   -l    List all available prompts (-p) and their descriptions. Will exit.
   -model string
         The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt (default "chatgpt")
@@ -22,15 +26,13 @@ Usage of /var/folders/6y/lfjvkrpn2yd66gg1j03qg7jm0000gn/T/go-build3081319399/b00
         The prompt to use for the GPT request: thyme -p active_voice my_blog_post.txt
   -quiet
         Will omit the spinner and typewriter.
-  -text string
-        Pass text to the prompt instead of a file. Used after -p. Anything after is passed. Example: thyme -p active_voice --text "blah"
 
 ```
 
 You can enable saving the queries and results as JSON with the following environment variables:
 
-`THYME_QUERY_LOGGING_DIR='<full_path_to_dir>'`
-`THYME_QUERY_LOGGING='true'`
+- `THYME_QUERY_LOGGING_DIR='<full_path_to_dir>'`
+- `THYME_QUERY_LOGGING='true'`
 
 If anything but 'true' is set for `THYME_QUERY_LOGGING` then it will not be logged.
 
