@@ -21,7 +21,7 @@ Usage of thyme:
         Use the Kagi Universal Summarizer API. Pass the URL to summarize after -a.
   -l    List all available prompts (-p) and their descriptions. Will exit.
   -model string
-        The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt (default "chatgpt")
+        The model to use for the GPT request if you wish to not use the default
   -p string
         The prompt to use for the GPT request: thyme -p active_voice my_blog_post.txt
   -quiet
@@ -36,9 +36,14 @@ You can enable saving the queries and results as JSON with the following environ
 
 If anything but 'true' is set for `THYME_QUERY_LOGGING` then it will not be logged.
 
-The models we currently support interacting with are: `chatgpt`, `gpt4`. By default, `chatgpt` is used for cost-savings purposes.
+The models we currently support interacting with are as follows: 
 
-
+| Model | Provider | Default |
+| --- | --- | --- |
+| `chatgpt` | OpenAI | Yes |
+| `gpt4` | OpenAI | No |
+| `agnes` | Kagi | Yes |
+| `daphne` | Kagi | No |
 
 ## Examples
 

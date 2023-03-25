@@ -76,7 +76,7 @@ func main() {
     questionFlag := flag.String("a", "", "Ask a question and get a response")
     promptFlag := flag.String("p", "", "The prompt to use for the GPT request: thyme -p active_voice my_blog_post.txt")
     customPromptFlag := flag.String("c", "", "Pass a custom prompt to the GPT request. Cannot be used with -p.")
-    modelFlag := flag.String("model", "chatgpt", "The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt")
+    modelFlag := flag.String("model", "", "The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt")
     chatFlag := flag.Bool("chat", false, "Start a chat session with the GPT model")
     kagiFlag := flag.Bool("ksum", false, "Use the Kagi Universal Summarizer API. Pass the URL to summarize after -a.")
     fileFlag := flag.String("file", "", "Pass file to the prompt. Cannot be used with -a.")
@@ -86,6 +86,11 @@ func main() {
     openAIModels := map[string]string{
         "chatgpt": openai.GPT3Dot5Turbo,
         "gpt4":    openai.GPT4,
+    }
+
+    kagiModels := map[string]string{
+        "agnes":  "agnes",
+        "daphne": "daphne",
     }
 
     // If the user passed -l, list the available prompts and exit
@@ -133,8 +138,17 @@ func main() {
             os.Exit(1)
         }
 
+        // We default to agnes, but if the user passes a different one we use that
+        var engineChoice string
+
+        if *modelFlag != "" {
+            engineChoice = kagiModels[*modelFlag]
+        } else {
+            engineChoice = "agnes"
+        }
+
         kagi := KagiRequest{
-            Engine: "agnes",
+            Engine: engineChoice,
             Input:  *questionFlag,
             Type:   "url",
         }
@@ -179,6 +193,15 @@ func main() {
         chosenPrompt = prompts[*prompt].Text
     }
 
+    // We default to chatgpt, but if the user passes a different one we use that
+    var engineChoice string
+
+    if *modelFlag != "" {
+        engineChoice = openAIModels[*modelFlag]
+    } else {
+        engineChoice = "chatgpt"
+    }
+
     // -a flag will allow us to just ask a question and get a response
     // Exit after we display the response
     if *questionFlag != "" {
@@ -186,9 +209,9 @@ func main() {
         var response string
 
         if *promptFlag != "" && *customPromptFlag != "" {
-            response = callChatGPTNoPrompt(request, openAIModels[*modelFlag])
+            response = callChatGPTNoPrompt(request, engineChoice)
         } else {
-            response = callChatGPT(request, chosenPrompt, openAIModels[*modelFlag])
+            response = callChatGPT(request, chosenPrompt, engineChoice)
         }
 
         // Tell the spinner we are done
@@ -218,7 +241,7 @@ func main() {
         os.Exit(0)
     }
 
-    response := callChatGPT(request, chosenPrompt, openAIModels[*modelFlag])
+    response := callChatGPT(request, chosenPrompt, engineChoice)
 
     // Tell the spinner we are done
 
