@@ -79,10 +79,11 @@ func main() {
     textFlag := flag.String("text", "", "Pass text to the prompt instead of a file. Used after -p. Anything after is passed. Example: thyme -p active_voice --text \"blah\"")
     modelFlag := flag.String("model", "chatgpt", "The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt")
     chatFlag := flag.Bool("chat", false, "Start a chat session with the GPT model")
+    kagiFlag := flag.Bool("ksum", false, "Use the Kagi Universal Summarizer API")
     flag.Parse()
 
     // A map of string names to our models
-    models := map[string]string{
+    openAIModels := map[string]string{
         "chatgpt": openai.GPT3Dot5Turbo,
         "gpt4":    openai.GPT4,
     }
@@ -93,20 +94,54 @@ func main() {
         os.Exit(0)
     }
 
-    if *chatFlag == true {
-        gptChat(models[*modelFlag])
-        os.Exit(0)
-    }
-
     // If the user passed _both_ -c and -p we need to tell them this is not supported
     if *customPromptFlag != "" && *promptFlag != "" {
         fmt.Println("You cannot use both -c and -p. Please use one or the other.")
         os.Exit(1)
     }
 
+    if *chatFlag == true {
+        gptChat(openAIModels[*modelFlag])
+        os.Exit(0)
+    }
+
     // Make the spinner channel so we can tell when its done
     spinningComplete := make(chan bool)
 
+    // Handle the Kagi API first as OpenAI is current default
+    if *kagiFlag == true {
+
+        // Start the spinner
+        if *animationFlagVal == false {
+            go spinner(spinningComplete)
+        }
+
+        if *questionFlag == "" {
+            fmt.Println("Please pass a URL after -a: thyme -ksum -a https://a.com")
+            os.Exit(1)
+        }
+
+        kagi := KagiRequest{
+            Engine: "agnes",
+            Input:  *questionFlag,
+            Type:   "url",
+        }
+
+        response := makeURLSummaryRequest(kagi)
+
+        // Tell the spinner we are done and print the response
+        if *animationFlagVal == false {
+            spinningComplete <- true
+            typeWriterPrint(response.Data.Output, false)
+            os.Exit(0)
+        }
+
+        fmt.Println(response.Data.Output)
+        os.Exit(0)
+
+    }
+
+    // Enable the spinner if it is not disabled
     if *animationFlagVal == false {
         go spinner(spinningComplete)
     }
@@ -141,9 +176,9 @@ func main() {
         var response string
 
         if *promptFlag != "" && *customPromptFlag != "" {
-            response = callChatGPTNoPrompt(request, models[*modelFlag])
+            response = callChatGPTNoPrompt(request, openAIModels[*modelFlag])
         } else {
-            response = callChatGPT(request, chosenPrompt, models[*modelFlag])
+            response = callChatGPT(request, chosenPrompt, openAIModels[*modelFlag])
         }
 
         // Tell the spinner we are done
@@ -173,7 +208,7 @@ func main() {
         os.Exit(0)
     }
 
-    response := callChatGPT(request, chosenPrompt, models[*modelFlag])
+    response := callChatGPT(request, chosenPrompt, openAIModels[*modelFlag])
 
     // Tell the spinner we are done
 

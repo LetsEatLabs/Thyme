@@ -21,9 +21,9 @@ type KagiResponse struct {
 	} `json:"data"`
 
 	Meta struct {
-		id   string `json:"id"`
-		node string `json:"node"`
-		ms   int    `json:"ms"`
+		Id   string `json:"id"`
+		Node string `json:"node"`
+		Ms   int    `json:"ms"`
 	} `json:"meta"`
 }
 
@@ -54,7 +54,7 @@ func makeURLSummaryRequest(kagi KagiRequest) KagiResponse {
 		"Content-Type":  "application/json",
 	}
 
-	request := fmt.Sprintf(`{"url": "%s", "engine": "%s"}`, cleanInput, cleanEngine)
+	request := fmt.Sprintf(`{"url": %s, "engine": %s}`, cleanInput, cleanEngine)
 	brequest := []byte(request) // Bytes so we can send it over the wire
 
 	// Create a new request with custom headers and JSON payload
