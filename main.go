@@ -78,7 +78,7 @@ func main() {
     customPromptFlag := flag.String("c", "", "Pass a custom prompt to the GPT request. Cannot be used with -p.")
     modelFlag := flag.String("model", "", "The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt")
     chatFlag := flag.Bool("chat", false, "Start a chat session with the GPT model")
-    kagiFlag := flag.Bool("ksum", false, "Use the Kagi Universal Summarizer API. Pass the URL to summarize after -a. Also works with -model")
+    kagiFlag := flag.String("ksum", "url", "Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model")
     openAIFlag := flag.Bool("oa", false, "Use the OpenAI API.")
     fileFlag := flag.String("file", "", "Pass file to the prompt. Cannot be used with -a.")
     flag.Parse()
@@ -130,7 +130,7 @@ func main() {
     // So we only ever use one call per execution.
 
     // Handle a Kagi API
-    if *kagiFlag == true {
+    if *kagiFlag != "" {
 
         // Start the spinner
         if *animationFlagVal == false {
@@ -138,7 +138,7 @@ func main() {
         }
 
         if *questionFlag == "" {
-            fmt.Println("Please pass a URL after -a: thyme -ksum -a https://a.com")
+            fmt.Println("Please pass either a URL or text after -a: thyme -ksum -a https://a.com")
             os.Exit(1)
         }
 
@@ -154,10 +154,10 @@ func main() {
         kagi := KagiRequest{
             Engine: engineChoice,
             Input:  *questionFlag,
-            Type:   "url",
+            Type:   *kagiFlag,
         }
 
-        response := makeURLSummaryRequest(kagi)
+        response := makeSummaryRequest(kagi)
 
         // Tell the spinner we are done and print the response
         if *animationFlagVal == false {

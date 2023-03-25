@@ -33,7 +33,7 @@ type KagiRequest struct {
 	Type   string // url, text, or file
 }
 
-func makeURLSummaryRequest(kagi KagiRequest) KagiResponse {
+func makeSummaryRequest(kagi KagiRequest) KagiResponse {
 
 	// Sanitize our input to make a JSON string
 	cleanInput, err := json.Marshal(kagi.Input)
@@ -54,7 +54,7 @@ func makeURLSummaryRequest(kagi KagiRequest) KagiResponse {
 		"Content-Type":  "application/json",
 	}
 
-	request := fmt.Sprintf(`{"url": %s, "engine": %s}`, cleanInput, cleanEngine)
+	request := fmt.Sprintf(`{"%s": %s, "engine": %s}`, kagi.Type, cleanInput, cleanEngine)
 	brequest := []byte(request) // Bytes so we can send it over the wire
 
 	// Create a new request with custom headers and JSON payload
