@@ -102,6 +102,9 @@ func gptChat(model string, fileChat bool, file ...string) {
 	fmt.Println("Conversation")
 	fmt.Println("---------------------")
 
+	// Make the spinner channel so we can tell when its done
+	spinningComplete := make(chan bool)
+
 	chatCount := 0
 
 	// If we're reading from a file, read it and send it to the API
@@ -110,6 +113,9 @@ func gptChat(model string, fileChat bool, file ...string) {
 
 		// If we are filechatting
 		if fileChat && chatCount == 0 {
+
+			// Start the spinner
+			go spinner(spinningComplete)
 
 			prompt := "Hello! We would like to talk about this file, please:"
 			text := readFileToString(file[0])
@@ -129,11 +135,13 @@ func gptChat(model string, fileChat bool, file ...string) {
 			)
 
 			if err != nil {
+				spinningComplete <- true
 				fmt.Printf("ChatCompletion error: %v\n", err)
 				continue
 			}
 
 			chatCount++
+			spinningComplete <- true
 			continue
 
 		}
@@ -148,6 +156,9 @@ func gptChat(model string, fileChat bool, file ...string) {
 			Content: text,
 		})
 
+		// Start the spinner
+		go spinner(spinningComplete)
+
 		resp, err := client.CreateChatCompletion(
 			context.Background(),
 			openai.ChatCompletionRequest{
@@ -157,6 +168,7 @@ func gptChat(model string, fileChat bool, file ...string) {
 		)
 
 		if err != nil {
+			spinningComplete <- true
 			fmt.Printf("ChatCompletion error: %v\n", err)
 			continue
 		}
@@ -166,6 +178,9 @@ func gptChat(model string, fileChat bool, file ...string) {
 			Role:    openai.ChatMessageRoleAssistant,
 			Content: content,
 		})
+
+		spinningComplete <- true
+
 		typeWriterPrint(content+"\n", false)
 
 		chatCount++
