@@ -95,14 +95,49 @@ func callGPT(query string) string {
 /////////////////
 
 // Handle a chat interaction with the GPT API
-func gptChat(model string) {
+func gptChat(model string, fileChat bool, file ...string) {
 	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 	messages := make([]openai.ChatCompletionMessage, 0)
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Conversation")
 	fmt.Println("---------------------")
 
+	chatCount := 0
+
+	// If we're reading from a file, read it and send it to the API
+
 	for {
+
+		// If we are filechatting
+		if fileChat && chatCount == 0 {
+
+			prompt := "Hello! We would like to talk about this file, please:"
+			text := readFileToString(file[0])
+			text = strings.Replace(text, "\n", "", -1)
+			sendtext := fmt.Sprintf("%s %s", prompt, text)
+			messages = append(messages, openai.ChatCompletionMessage{
+				Role:    openai.ChatMessageRoleUser,
+				Content: sendtext,
+			})
+
+			_, err := client.CreateChatCompletion(
+				context.Background(),
+				openai.ChatCompletionRequest{
+					Model:    model,
+					Messages: messages,
+				},
+			)
+
+			if err != nil {
+				fmt.Printf("ChatCompletion error: %v\n", err)
+				continue
+			}
+
+			chatCount++
+			continue
+
+		}
+
 		prettyPrintChatArrow("-> ")
 		text, _ := reader.ReadString('\n')
 		fmt.Println("---")
@@ -132,6 +167,8 @@ func gptChat(model string) {
 			Content: content,
 		})
 		typeWriterPrint(content+"\n", false)
+
+		chatCount++
 	}
 }
 
