@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 )
@@ -83,15 +84,12 @@ func makeSummaryRequest(kagi KagiRequest) KagiResponse {
 		panic(err)
 	}
 
+	if os.Getenv("THYME_QUERY_LOGGING") == "true" {
+		saveKagiSummary(response, kagi)
+	}
+
 	return response
 }
-
-// func makeTextSummaryRequest(kagi KagiRequest) KagiResponse {
-// 	//kagiKey := os.Getenv("KAGI_API_KEY")
-
-// 	response := KagiResponse{Output: "Not Implemented", Tokens: 0}
-// 	return response
-// }
 
 // func makeFileSummaryRequest(kagi KagiRequest) KagiResponse {
 // 	//kagiKey := os.Getenv("KAGI_API_KEY")
@@ -99,3 +97,31 @@ func makeSummaryRequest(kagi KagiRequest) KagiResponse {
 // 	response := KagiResponse{Output: "Not Implemented", Tokens: 0}
 // 	return response
 // }
+
+func saveKagiSummary(response KagiResponse, request KagiRequest) {
+	directory := os.Getenv("THYME_QUERY_KAGI_LOGGING_DIR")
+	fileloc, _, _ := makeSaveNameAndStamps(directory)
+
+	var q []byte
+	var a []byte
+
+	q, err := json.Marshal(request.Input)
+	if err != nil {
+		q = []byte(request.Input)
+	}
+
+	a, err = json.Marshal(response.Data.Output)
+	if err != nil {
+		a = []byte(response.Data.Output)
+	}
+
+	fileData := fmt.Sprintf(`{"query": %s, "answer": %s}`, string(q), string(a))
+
+	// Write the file
+	err = ioutil.WriteFile(fileloc, []byte(fileData), 0644)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+}

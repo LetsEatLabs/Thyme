@@ -206,7 +206,7 @@ func main() {
         var request string
         var chosenPrompt string
 
-        // If the user passed -text then we want to use the text after the flag
+        // If the user passed -a then we want to use the text after the flag
         if *fileFlag != "" {
             request = readFileToString(*fileFlag)
         } else if *questionFlag != "" {
