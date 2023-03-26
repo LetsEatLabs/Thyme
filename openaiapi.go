@@ -95,14 +95,57 @@ func callGPT(query string) string {
 /////////////////
 
 // Handle a chat interaction with the GPT API
-func gptChat(model string) {
+func gptChat(model string, fileChat bool, file ...string) {
 	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 	messages := make([]openai.ChatCompletionMessage, 0)
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Conversation")
 	fmt.Println("---------------------")
 
+	// Make the spinner channel so we can tell when its done
+	spinningComplete := make(chan bool)
+
+	chatCount := 0
+
+	// If we're reading from a file, read it and send it to the API
+
 	for {
+
+		// If we are filechatting
+		if fileChat && chatCount == 0 {
+
+			// Start the spinner
+			go spinner(spinningComplete)
+
+			prompt := "Hello! We would like to talk about this file, please:"
+			text := readFileToString(file[0])
+			text = strings.Replace(text, "\n", "", -1)
+			sendtext := fmt.Sprintf("%s %s", prompt, text)
+			messages = append(messages, openai.ChatCompletionMessage{
+				Role:    openai.ChatMessageRoleUser,
+				Content: sendtext,
+			})
+
+			_, err := client.CreateChatCompletion(
+				context.Background(),
+				openai.ChatCompletionRequest{
+					Model:    model,
+					Messages: messages,
+				},
+			)
+
+			if err != nil {
+				spinningComplete <- true
+				fmt.Printf("ChatCompletion error: %v\n", err)
+				continue
+			}
+
+			chatCount++
+			spinningComplete <- true
+			continue
+
+		}
+
 		prettyPrintChatArrow("-> ")
 		text, _ := reader.ReadString('\n')
 		fmt.Println("---")
@@ -113,6 +156,9 @@ func gptChat(model string) {
 			Content: text,
 		})
 
+		// Start the spinner
+		go spinner(spinningComplete)
+
 		resp, err := client.CreateChatCompletion(
 			context.Background(),
 			openai.ChatCompletionRequest{
@@ -122,6 +168,7 @@ func gptChat(model string) {
 		)
 
 		if err != nil {
+			spinningComplete <- true
 			fmt.Printf("ChatCompletion error: %v\n", err)
 			continue
 		}
@@ -131,7 +178,12 @@ func gptChat(model string) {
 			Role:    openai.ChatMessageRoleAssistant,
 			Content: content,
 		})
+
+		spinningComplete <- true
+
 		typeWriterPrint(content+"\n", false)
+
+		chatCount++
 	}
 }
 
@@ -147,30 +199,7 @@ func saveGPT(qs QuerySave) {
 		return
 	}
 
-	// Write the file as a json sting string
-	// {'timestampe': '...', 'prompt': '...', 'query': '...', 'answer': ...}
-	// Filename is YYYY-MM-DD-HH-mm-SS-query.json
-	currentTime := time.Now()
-	year, month, day := currentTime.Date()
-	hour, min, sec := currentTime.Clock()
-
-	formattedTime := fmt.Sprintf("%d-%02d-%02d-%02d-%02d-%02d",
-		year,
-		month,
-		day,
-		hour,
-		min,
-		sec)
-
-	formattingTimeStamp := fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d",
-		year,
-		month,
-		day,
-		hour,
-		min,
-		sec)
-
-	filename := fmt.Sprintf("%s/%s-query.json", saveDir, formattedTime)
+	filename, _, formattingTimeStamp := makeSaveNameAndStamps(saveDir)
 
 	var t []byte
 	var p []byte
@@ -209,4 +238,33 @@ func saveGPT(qs QuerySave) {
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+// Returns the file save name and timestamps used by saving processes
+func makeSaveNameAndStamps(saveDir string) (string, string, string) {
+	// Write the file as a json sting string
+	// {'timestampe': '...', 'prompt': '...', 'query': '...', 'answer': ...}
+	// Filename is YYYY-MM-DD-HH-mm-SS-query.json
+	currentTime := time.Now()
+	year, month, day := currentTime.Date()
+	hour, min, sec := currentTime.Clock()
+
+	formattedTime := fmt.Sprintf("%d-%02d-%02d-%02d-%02d-%02d",
+		year,
+		month,
+		day,
+		hour,
+		min,
+		sec)
+
+	formattingTimeStamp := fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d",
+		year,
+		month,
+		day,
+		hour,
+		min,
+		sec)
+
+	filename := fmt.Sprintf("%s/%s-query.json", saveDir, formattedTime)
+	return filename, formattedTime, formattingTimeStamp
 }

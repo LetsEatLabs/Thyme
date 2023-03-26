@@ -35,8 +35,7 @@ You can enable saving the queries and results as JSON with the following environ
 
 - `THYME_QUERY_LOGGING_DIR='<full_path_to_dir>'`
 - `THYME_QUERY_LOGGING='true'`
-
-Logging only currently works with the OpenAI API queries, `-oa`.
+- `THYME_QUERY_KAGI_LOGGING_DIR='<full_path_to_dir>'`
 
 The program accesses the following environment variables
 

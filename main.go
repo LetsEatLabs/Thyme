@@ -185,7 +185,14 @@ func main() {
 
         // If the user wishes to chat, lets do that
         if *chatFlag == true {
-            gptChat(openAIModels[engineChoice])
+
+            // If the user wants to chat about a file
+            if *fileFlag != "" {
+                gptChat(openAIModels[engineChoice], true, *fileFlag)
+                os.Exit(0)
+            }
+
+            gptChat(openAIModels[engineChoice], false)
             os.Exit(0)
         }
 
@@ -199,7 +206,7 @@ func main() {
         var request string
         var chosenPrompt string
 
-        // If the user passed -text then we want to use the text after the flag
+        // If the user passed -a then we want to use the text after the flag
         if *fileFlag != "" {
             request = readFileToString(*fileFlag)
         } else if *questionFlag != "" {
