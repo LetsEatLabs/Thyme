@@ -11,7 +11,7 @@ Usage of thyme:
   -c string
         Pass a custom prompt to the GPT request. Cannot be used with -p.
   -chat
-        Start a chat session with the GPT model. Must be used with -oa
+        Start a chat session with the GPT model. Must be used with -oa. Can be used with -file to chat about a file.
   -file string
         Pass file to the prompt. Cannot be used with -a.
   -ksum string
