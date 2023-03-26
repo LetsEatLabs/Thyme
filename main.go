@@ -16,14 +16,25 @@ func helpMessage() {
 Usage: thyme <flags> <input file>
 
 Flags:
-    -p <prompt>         The prompt to use for the GPT request
-    -a <ask-question>   Ask a question and get a response (cannot be used with any other flags)
-    -h/--help           Display this help message
-    -quiet              Will omit the spinner and typewriter. 
-    -l                  List all available prompts (-p) and their descriptions. Will exit.
-    -text               Pass text to the prompt instead of a file. Used after -p.
-                        Anything after is passed. Example: thyme -p active_voice --text "blah"
-    -model              
+    -a string
+        Ask a question and get a response
+  -c string
+        Pass a custom prompt to the GPT request. Cannot be used with -p.
+  -chat
+        Start a chat session with the GPT model. Must be used with -oa
+  -file string
+        Pass file to the prompt. Cannot be used with -a.
+  -ksum string
+        Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model
+  -l    List all available prompts (-p) and their descriptions. Will exit.
+  -model string
+        The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt
+  -oa
+        Use the OpenAI API.
+  -p string
+        The prompt to use for the GPT request: thyme -p active_voice my_blog_post.txt
+  -quiet
+        Will omit the spinner and typewriter.             
 `
 
     fmt.Println(helpStr)

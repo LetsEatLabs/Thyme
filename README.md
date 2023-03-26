@@ -49,6 +49,13 @@ The program accesses the following environment variables
 
 If anything but 'true' is set for `THYME_QUERY_LOGGING` then it will not be logged.
 
+Now build the program:
+
+```bash
+~ $: go build -o thyme .
+~ $: ./thyme -oa -chat
+```
+
 The models we currently support interacting with are as follows: 
 
 | Model | Provider | Default |
@@ -62,7 +69,7 @@ The models we currently support interacting with are as follows:
 
 ### Interprocess
 
-The most common use cases for this application are likely to be quick answers to questions or the chat interface. But this was also designed to be used between processes, so you can use it as a "function call" from yosur other applications. By default the application has some animations and formatting, but if you pass the `-quiet` flag then this is omitted and you are simply returned the response.
+The most common use cases for this application are likely to be quick answers to questions or the chat interface. But this was also designed to be used between processes, so you can use it as a "function call" from your other applications. By default the application has some animations and formatting, but if you pass the `-quiet` flag then this is omitted and you are simply returned the response.
 
 ### Built-in Prompts
 
