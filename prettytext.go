@@ -1,10 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"regexp"
 	"time"
 
+	"github.com/alecthomas/chroma"
+	"github.com/alecthomas/chroma/formatters"
+	"github.com/alecthomas/chroma/lexers"
+	"github.com/alecthomas/chroma/styles"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -94,3 +99,64 @@ func prettyPrintChatArrow(s string) {
 }
 
 /////////////////
+
+// Use the Chroma library to guess the syntax of the string and format it to print
+// To the terminal
+// This function was co-authored with GPT-4
+func prettyPrintCode(s string) string {
+	lexer := lexers.Analyse(s)
+
+	// If we can't guess the language, just print it as is
+	if lexer == nil {
+		lexer = lexers.Fallback
+	}
+
+	// If we can guess the language, print it with syntax highlighting
+	lexer = chroma.Coalesce(lexer)
+
+	style := styles.Get("monokai")
+	if style == nil {
+		style = styles.Fallback
+	}
+	formatter := formatters.Get("terminal256")
+	if formatter == nil {
+		formatter = formatters.Fallback
+	}
+
+	// Creating a bytes.Buffer to hold the formatted string
+	var buf bytes.Buffer
+
+	// Formatting and printing the syntax-highlighted code
+	iterator, _ := lexer.Tokenise(nil, s)
+	err := formatter.Format(&buf, style, iterator)
+	if err != nil {
+		fmt.Println("Error formatting code:", err)
+	}
+
+	// Returning the string representation of the buffer
+	return buf.String()
+
+}
+
+/////////////////
+
+// Format just the codeblocks in Markdown
+// Function written by GPT-4
+func formatCodeBlocksInMarkdown(s string) string {
+	// Regular expression to find code blocks: ``` followed by optional language,
+	// then anything until another ```
+	codeBlockRegex := regexp.MustCompile("(?s)(```)(.*?)(```)")
+
+	result := codeBlockRegex.ReplaceAllStringFunc(s, func(match string) string {
+		submatches := codeBlockRegex.FindStringSubmatch(match)
+		code := submatches[2] // Extract the code portion from the match
+
+		formattedCode := prettyPrintCode(code)
+
+		// Replacing the original code with the formatted code while preserving
+		// the original triple backticks and optional language identifier
+		return codeBlockRegex.ReplaceAllString(match, "$1"+formattedCode+"$1")
+	})
+
+	return result
+}
