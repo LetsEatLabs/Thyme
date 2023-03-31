@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
+	"github.com/alecthomas/chroma"
 	"github.com/alecthomas/chroma/formatters"
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
@@ -127,10 +129,22 @@ func prettyPrintChatArrow(s string) {
 // Use the Chroma library to guess the syntax of the string and format it to print
 // To the terminal
 // This function was co-authored with GPT-4
-func prettyPrintCode(s string) string {
-	lexer := lexers.Analyse(s)
+func prettyPrintCode(s string, language string) string {
+	var lexer chroma.Lexer
 
-	// If we can't guess the language, just print it as is
+	if language != "" {
+		lexer = lexers.Get(language)
+	}
+
+	// If we did not pass a language, then please guess
+	if language == "" {
+		detectProgrammingLanguage(s)
+	}
+
+	if lexer == nil {
+		lexer = lexers.Analyse(s)
+	}
+
 	if lexer == nil {
 		lexer = lexers.Fallback
 	}
@@ -166,7 +180,7 @@ func prettyPrintCode(s string) string {
 
 // Format just the codeblocks in Markdown
 // Function written by GPT-4
-func formatCodeBlocksInMarkdown(s string) string {
+func formatCodeBlocksInMarkdown(s string, language string) string {
 	// Regular expression to find code blocks: ``` followed by optional language,
 	// then anything until another ```
 	codeBlockRegex := regexp.MustCompile("(?s)(```)(.*?)(```)")
@@ -175,7 +189,7 @@ func formatCodeBlocksInMarkdown(s string) string {
 		submatches := codeBlockRegex.FindStringSubmatch(match)
 		code := submatches[2] // Extract the code portion from the match
 
-		formattedCode := prettyPrintCode(code)
+		formattedCode := prettyPrintCode(code, language)
 
 		// Replacing the original code with the formatted code while preserving
 		// the original triple backticks and optional language identifier
@@ -183,4 +197,81 @@ func formatCodeBlocksInMarkdown(s string) string {
 	})
 
 	return result
+}
+
+/////////////////
+
+// Try to detect the language from the response
+// Made with help from GPT-4
+
+func detectProgrammingLanguage(text string) string {
+	keywords := map[string][]string{
+		"python":     {"def", "import", "print", "class"},
+		"java":       {"public", "static", "void", "class"},
+		"go":         {"func", "import", "package", "type"},
+		"javascript": {"function", "var", "let", "const"},
+		"ruby":       {"def", "class", "require", "end"},
+		"bash":       {"#!/bin/bash", "echo", "if", "fi"},
+		"cpp":        {"#include", "iostream", "using", "namespace"},
+		"c":          {"#include", "stdio.h", "int", "main"},
+		"csharp":     {"using", "namespace", "class", "public"},
+		"rust":       {"fn", "mut", "let", "use"},
+		"scala":      {"object", "def", "val", "var"},
+		"ada":        {"procedure", "is", "begin", "end"},
+		"gdscript":   {"extends", "func", "var", "pass"},
+		"perl":       {"#!/usr/bin/perl", "use", "strict", "print"},
+	}
+
+	golangLibraries := []string{"fmt", "os", "math", "http", "time", "json"}
+	javascriptObjects := []string{"document", "console", "window", "Array", "Date"}
+	pythonObjects := []string{"sys", "os", "math", "random", "datetime", "__name__"}
+	gdscriptObjects := []string{"Node", "Spatial", "KinematicBody", "func", "var"}
+
+	lowPriority := ""
+	for lang, words := range keywords {
+		for _, word := range words {
+			regex := regexp.MustCompile(`\b` + word + `\b`)
+			if regex.MatchString(text) {
+
+				// Check if it is golang first
+				if lang == "go" {
+					for _, lib := range golangLibraries {
+						if strings.Contains(text, "\""+lib+"\"") {
+							return lang
+						}
+					}
+				}
+
+				// Javascript
+				if lang == "javascript" {
+					for _, obj := range javascriptObjects {
+						if strings.Contains(text, obj) {
+							return lang
+						}
+					}
+				}
+
+				// GDScript
+				if lang == "gdscript" {
+					for _, obj := range gdscriptObjects {
+						if strings.Contains(text, obj) {
+							return lang
+						}
+					}
+				}
+
+				// Python
+				if lang == "python" {
+					for _, obj := range pythonObjects {
+						if strings.Contains(text, obj) {
+							return lang
+						}
+					}
+				}
+
+				return lang
+			}
+		}
+	}
+	return lowPriority
 }

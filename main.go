@@ -92,6 +92,7 @@ func main() {
     kagiFlag := flag.String("ksum", "", "Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model")
     openAIFlag := flag.Bool("oa", false, "Use the OpenAI API.")
     fileFlag := flag.String("file", "", "Pass file to the prompt. Cannot be used with -a.")
+    langFlag := flag.String("lang", "", "The language to format the response syntax for. Omit to 'guess'. Defaults to a plain white text if cannot 'guess'.")
     flag.Parse()
 
     // A map of string names to our models
@@ -192,7 +193,7 @@ func main() {
                 os.Exit(0)
             }
 
-            gptChat(openAIModels[engineChoice], false)
+            gptChat(openAIModels[engineChoice], false, *langFlag)
             os.Exit(0)
         }
 
@@ -253,7 +254,7 @@ func main() {
             }
 
             if *animationFlagVal == false {
-                cleanResponse = formatCodeBlocksInMarkdown(cleanResponse)
+                cleanResponse = formatCodeBlocksInMarkdown(cleanResponse, *langFlag)
                 typeWriterPrint(cleanResponse, true)
             } else {
                 fmt.Println(cleanResponse)
@@ -284,7 +285,7 @@ func main() {
         }
 
         if *animationFlagVal == false {
-            cleanResponse = formatCodeBlocksInMarkdown(cleanResponse)
+            cleanResponse = formatCodeBlocksInMarkdown(cleanResponse, *langFlag)
             typeWriterPrint(cleanResponse, true)
         } else {
             fmt.Println(cleanResponse)

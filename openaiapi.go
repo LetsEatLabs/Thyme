@@ -95,7 +95,7 @@ func callGPT(query string) string {
 /////////////////
 
 // Handle a chat interaction with the GPT API
-func gptChat(model string, fileChat bool, file ...string) {
+func gptChat(model string, fileChat bool, proglanguage string, file ...string) {
 	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 	messages := make([]openai.ChatCompletionMessage, 0)
 	reader := bufio.NewReader(os.Stdin)
@@ -181,7 +181,7 @@ func gptChat(model string, fileChat bool, file ...string) {
 
 		spinningComplete <- true
 
-		content = formatCodeBlocksInMarkdown(content)
+		content = formatCodeBlocksInMarkdown(content, proglanguage)
 
 		typeWriterPrint(content+"\n", false)
 
