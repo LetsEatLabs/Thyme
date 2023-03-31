@@ -12,6 +12,8 @@ import (
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
 	"github.com/charmbracelet/lipgloss"
+
+	enry "github.com/go-enry/go-enry/v2"
 )
 
 /////////////////
@@ -132,13 +134,13 @@ func prettyPrintChatArrow(s string) {
 func prettyPrintCode(s string, language string) string {
 	var lexer chroma.Lexer
 
-	if language != "" {
-		lexer = lexers.Get(language)
-	}
-
 	// If we did not pass a language, then please guess
 	if language == "" {
-		detectProgrammingLanguage(s)
+		language = detectProgrammingLanguageEnry(s)
+	}
+
+	if language != "" {
+		lexer = lexers.Get(language)
 	}
 
 	if lexer == nil {
@@ -201,77 +203,33 @@ func formatCodeBlocksInMarkdown(s string, language string) string {
 
 /////////////////
 
-// Try to detect the language from the response
-// Made with help from GPT-4
+// Using the enry package for language detection
+func detectProgrammingLanguageEnry(text string) string {
 
-func detectProgrammingLanguage(text string) string {
-	keywords := map[string][]string{
-		"python":     {"def", "import", "print", "class"},
-		"java":       {"public", "static", "void", "class"},
-		"go":         {"func", "import", "package", "type"},
-		"javascript": {"function", "var", "let", "const"},
-		"ruby":       {"def", "class", "require", "end"},
-		"bash":       {"#!/bin/bash", "echo", "if", "fi"},
-		"cpp":        {"#include", "iostream", "using", "namespace"},
-		"c":          {"#include", "stdio.h", "int", "main"},
-		"csharp":     {"using", "namespace", "class", "public"},
-		"rust":       {"fn", "mut", "let", "use"},
-		"scala":      {"object", "def", "val", "var"},
-		"ada":        {"procedure", "is", "begin", "end"},
-		"gdscript":   {"extends", "func", "var", "pass"},
-		"perl":       {"#!/usr/bin/perl", "use", "strict", "print"},
+	// The languages we support right now. We _can_ pass every one that enry
+	// Knows about, but then we could get some wild false positives.
+	// We can add to this list if we want to support more languages
+	candidateLanguages := []string{
+		"python",
+		"go",
+		"scala",
+		"ruby",
+		"bash",
+		"gdscript",
+		"c",
+		"c++",
+		"c#",
+		"java",
+		"javascript",
+		"html",
+		"css",
 	}
 
-	golangLibraries := []string{"fmt", "os", "math", "http", "time", "json"}
-	javascriptObjects := []string{"document", "console", "window", "Array", "Date"}
-	pythonObjects := []string{"sys", "os", "math", "random", "datetime", "__name__"}
-	gdscriptObjects := []string{"Node", "Spatial", "KinematicBody", "func", "var"}
+	// Detect the programming language from the string
+	language, _ := enry.GetLanguageByClassifier([]byte(text), candidateLanguages)
 
-	lowPriority := ""
-	for lang, words := range keywords {
-		for _, word := range words {
-			regex := regexp.MustCompile(`\b` + word + `\b`)
-			if regex.MatchString(text) {
+	// Lowercase the language
+	language = strings.ToLower(language)
 
-				// Check if it is golang first
-				if lang == "go" {
-					for _, lib := range golangLibraries {
-						if strings.Contains(text, "\""+lib+"\"") {
-							return lang
-						}
-					}
-				}
-
-				// Javascript
-				if lang == "javascript" {
-					for _, obj := range javascriptObjects {
-						if strings.Contains(text, obj) {
-							return lang
-						}
-					}
-				}
-
-				// GDScript
-				if lang == "gdscript" {
-					for _, obj := range gdscriptObjects {
-						if strings.Contains(text, obj) {
-							return lang
-						}
-					}
-				}
-
-				// Python
-				if lang == "python" {
-					for _, obj := range pythonObjects {
-						if strings.Contains(text, obj) {
-							return lang
-						}
-					}
-				}
-
-				return lang
-			}
-		}
-	}
-	return lowPriority
+	return language
 }

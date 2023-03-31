@@ -16,7 +16,7 @@ func helpMessage() {
 Usage: thyme <flags> <input file>
 
 Flags:
-    -a string
+  -a string
         Ask a question and get a response
   -c string
         Pass a custom prompt to the GPT request. Cannot be used with -p.
@@ -27,6 +27,8 @@ Flags:
   -ksum string
         Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model
   -l    List all available prompts (-p) and their descriptions. Will exit.
+  -lang string
+        The language to format the response syntax for. Omit to 'guess'.
   -model string
         The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt
   -oa
@@ -34,7 +36,7 @@ Flags:
   -p string
         The prompt to use for the GPT request: thyme -p active_voice my_blog_post.txt
   -quiet
-        Will omit the spinner and typewriter.             
+        Will omit the spinner and typewriter.           
 `
 
     fmt.Println(helpStr)
@@ -92,7 +94,7 @@ func main() {
     kagiFlag := flag.String("ksum", "", "Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model")
     openAIFlag := flag.Bool("oa", false, "Use the OpenAI API.")
     fileFlag := flag.String("file", "", "Pass file to the prompt. Cannot be used with -a.")
-    langFlag := flag.String("lang", "", "The language to format the response syntax for. Omit to 'guess'. Defaults to a plain white text if cannot 'guess'.")
+    langFlag := flag.String("lang", "", "The language to format the response syntax for. Omit to 'guess'.")
     flag.Parse()
 
     // A map of string names to our models
