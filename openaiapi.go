@@ -181,6 +181,8 @@ func gptChat(model string, fileChat bool, file ...string) {
 
 		spinningComplete <- true
 
+		content = formatCodeBlocksInMarkdown(content)
+
 		typeWriterPrint(content+"\n", false)
 
 		chatCount++

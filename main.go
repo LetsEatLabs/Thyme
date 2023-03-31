@@ -284,6 +284,7 @@ func main() {
         }
 
         if *animationFlagVal == false {
+            cleanResponse = formatCodeBlocksInMarkdown(cleanResponse)
             typeWriterPrint(cleanResponse, true)
         } else {
             fmt.Println(cleanResponse)

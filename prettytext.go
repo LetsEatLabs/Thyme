@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/alecthomas/chroma"
 	"github.com/alecthomas/chroma/formatters"
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
@@ -32,13 +31,38 @@ func removeLeadingNewLines(s string) string {
 /////////////////
 
 // Prints text so that it looks like a typewriter
+// GPT-4 Helped fixed the colors printing slowly
 func typeWriterPrint(s string, space bool) {
-
 	re := regexp.MustCompile(`(?m:!^)[^\S\r\n\t]{2,}`)
 	newStr := re.ReplaceAllString(s, "")
+
+	// Use a regular expression to match the terminal's escape sequences
+	// (\033 represents the ESC character in octal notation)
+	ansiEscapeSeq := regexp.MustCompile(`\033\[[0-9;]*m`)
+
+	// Keep track of whether we have an ongoing escape sequence
+	// This is so that text that is supposed to be in color
+	// Prints at the same speed at regular text
+	inEscapeSequence := false
+	escSeq := ""
+
 	for _, c := range newStr {
-		fmt.Printf("%c", c)
-		time.Sleep(time.Millisecond * 20)
+		str := string(c)
+		if inEscapeSequence {
+			escSeq += str
+			if ansiEscapeSeq.MatchString(escSeq) {
+				inEscapeSequence = false
+				fmt.Print(escSeq)
+			}
+		} else {
+			if str == "\033" {
+				inEscapeSequence = true
+				escSeq = str
+			} else {
+				fmt.Printf("%c", c)
+				time.Sleep(20 * time.Millisecond)
+			}
+		}
 	}
 
 	if space {
@@ -112,13 +136,13 @@ func prettyPrintCode(s string) string {
 	}
 
 	// If we can guess the language, print it with syntax highlighting
-	lexer = chroma.Coalesce(lexer)
+	//lexer = chroma.Coalesce(lexer)
 
 	style := styles.Get("monokai")
 	if style == nil {
 		style = styles.Fallback
 	}
-	formatter := formatters.Get("terminal256")
+	formatter := formatters.Get("terminal16m")
 	if formatter == nil {
 		formatter = formatters.Fallback
 	}
