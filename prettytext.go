@@ -224,6 +224,7 @@ func detectProgrammingLanguageEnry(text string) string {
 		"html",
 		"css",
 		"text",
+		"rust",
 	}
 
 	// Detect the programming language from the string
