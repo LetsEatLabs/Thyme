@@ -191,7 +191,7 @@ func main() {
 
             // If the user wants to chat about a file
             if *fileFlag != "" {
-                gptChat(openAIModels[engineChoice], true, "", *fileFlag)
+                gptChat(openAIModels[engineChoice], true, *langFlag, *fileFlag)
                 os.Exit(0)
             }
 
