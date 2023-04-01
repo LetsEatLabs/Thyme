@@ -102,6 +102,10 @@ func gptChat(model string, fileChat bool, proglanguage string, file ...string) {
 	fmt.Println("Conversation")
 	fmt.Println("---------------------")
 
+	// Create the file to save the chats in
+	saveDir := os.Getenv("THYME_QUERY_LOGGING_DIR")
+	savefilename, _, _ := makeSaveNameAndStamps(saveDir, "chat")
+
 	// Make the spinner channel so we can tell when its done
 	spinningComplete := make(chan bool)
 
@@ -110,6 +114,8 @@ func gptChat(model string, fileChat bool, proglanguage string, file ...string) {
 	// If we're reading from a file, read it and send it to the API
 
 	for {
+
+		qs := QuerySave{}
 
 		// If we are filechatting
 		if fileChat && chatCount == 0 {
@@ -126,7 +132,7 @@ func gptChat(model string, fileChat bool, proglanguage string, file ...string) {
 				Content: sendtext,
 			})
 
-			_, err := client.CreateChatCompletion(
+			resp, err := client.CreateChatCompletion(
 				context.Background(),
 				openai.ChatCompletionRequest{
 					Model:    model,
@@ -139,6 +145,13 @@ func gptChat(model string, fileChat bool, proglanguage string, file ...string) {
 				fmt.Printf("ChatCompletion error: %v\n", err)
 				continue
 			}
+
+			// We just save the filename so we dont just create a copy of a
+			// Giant file
+			qs.Query = fmt.Sprintf("%s %s", prompt, file[0])
+			qs.Answer = resp.Choices[0].Message.Content
+
+			saveChat(qs, savefilename)
 
 			chatCount++
 			spinningComplete <- true
@@ -181,6 +194,11 @@ func gptChat(model string, fileChat bool, proglanguage string, file ...string) {
 
 		spinningComplete <- true
 
+		// Save the chat file
+		qs.Query = text
+		qs.Answer = content
+		saveChat(qs, savefilename)
+
 		content = formatCodeBlocksInMarkdown(content, proglanguage)
 
 		typeWriterPrint(content+"\n", false)
@@ -201,7 +219,7 @@ func saveGPT(qs QuerySave) {
 		return
 	}
 
-	filename, _, formattingTimeStamp := makeSaveNameAndStamps(saveDir)
+	filename, _, formattingTimeStamp := makeSaveNameAndStamps(saveDir, "query")
 
 	var t []byte
 	var p []byte
@@ -228,6 +246,10 @@ func saveGPT(qs QuerySave) {
 		a = []byte(qs.Answer)
 	}
 
+	// Write the file as a json sting string
+	// {'timestampe': '...', 'prompt': '...', 'query': '...', 'answer': ...}
+	// Filename is YYYY-MM-DD-HH-mm-SS-query.json
+
 	fileData := fmt.Sprintf(`{"timestamp": %s, "prompt": %s, "query": %s, "answer": %s}`,
 		string(t),
 		string(p),
@@ -242,11 +264,42 @@ func saveGPT(qs QuerySave) {
 	}
 }
 
+/////////////////
+
+// Save the chat information, appended to the file
+func saveChat(qs QuerySave, savefile string) {
+	file, err := os.OpenFile(savefile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	defer file.Close()
+
+	var q []byte
+	var a []byte
+
+	q, err = json.Marshal(qs.Query)
+	if err != nil {
+		q = []byte(qs.Query)
+	}
+
+	a, err = json.Marshal(qs.Answer)
+	if err != nil {
+		a = []byte(qs.Answer)
+	}
+
+	savestr := fmt.Sprintf(`{"query": %s, "answer": %s}`, q, a) + "\n"
+
+	if _, err := file.WriteString(savestr); err != nil { // Append text to file
+		fmt.Println(err.Error())
+		return
+	}
+
+}
+
 // Returns the file save name and timestamps used by saving processes
-func makeSaveNameAndStamps(saveDir string) (string, string, string) {
-	// Write the file as a json sting string
-	// {'timestampe': '...', 'prompt': '...', 'query': '...', 'answer': ...}
-	// Filename is YYYY-MM-DD-HH-mm-SS-query.json
+func makeSaveNameAndStamps(saveDir string, savetype string) (string, string, string) {
 	currentTime := time.Now()
 	year, month, day := currentTime.Date()
 	hour, min, sec := currentTime.Clock()
@@ -267,6 +320,12 @@ func makeSaveNameAndStamps(saveDir string) (string, string, string) {
 		min,
 		sec)
 
-	filename := fmt.Sprintf("%s/%s-query.json", saveDir, formattedTime)
+	filename := fmt.Sprintf("%s/%s-%s.json", saveDir, formattedTime, savetype)
+
+	// If we are saving a chat, make a JSONL file instead
+	if savetype == "chat" {
+		filename = fmt.Sprintf("%s/%s-%s.jsonl", saveDir, formattedTime, savetype)
+	}
+
 	return filename, formattedTime, formattingTimeStamp
 }
