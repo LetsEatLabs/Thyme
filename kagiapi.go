@@ -100,7 +100,7 @@ func makeSummaryRequest(kagi KagiRequest) KagiResponse {
 
 func saveKagiSummary(response KagiResponse, request KagiRequest) {
 	directory := os.Getenv("THYME_QUERY_KAGI_LOGGING_DIR")
-	fileloc, _, _ := makeSaveNameAndStamps(directory)
+	fileloc, _, _ := makeSaveNameAndStamps(directory, "summary")
 
 	var q []byte
 	var a []byte
