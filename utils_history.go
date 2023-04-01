@@ -7,6 +7,26 @@ import (
 	"path/filepath"
 )
 
+/////////////
+/////////////
+
+type ChatHistoryLine struct {
+	Query  string
+	Answer string
+}
+
+type ChatHistory struct {
+	ChatHistoryLines []ChatHistoryLine
+}
+
+type SummaryHistory struct {
+	Query  string
+	Answer string
+}
+
+/////////////
+/////////////
+
 func viewHistoryQueries() {
 	// Get the history file
 	historyFiles := getHistoryFiles()
