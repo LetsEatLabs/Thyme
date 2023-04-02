@@ -55,6 +55,7 @@ If anything but 'true' is set for `THYME_QUERY_LOGGING` then it will not be logg
 Now build the program:
 
 ```bash
+~ $: cd src
 ~ $: go build -o thyme .
 ~ $: ./thyme -oa -chat
 ```
