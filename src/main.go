@@ -95,6 +95,7 @@ func main() {
     openAIFlag := flag.Bool("oa", false, "Use the OpenAI API.")
     fileFlag := flag.String("file", "", "Pass file to the prompt. Cannot be used with -a.")
     langFlag := flag.String("lang", "", "The language to format the response syntax for. Omit to 'guess'.")
+    historyFlag := flag.String("history", "", "Review the history of your queries. -history [chat, summary, query, all]")
     flag.Parse()
 
     // A map of string names to our models
@@ -111,6 +112,12 @@ func main() {
     // If the user passed -l, list the available prompts and exit
     if *listFlag == true {
         listAvailablePrompts()
+        os.Exit(0)
+    }
+
+    // If we want to view our history, do that
+    if *historyFlag != "" {
+        viewHistoryQueries(*historyFlag)
         os.Exit(0)
     }
 
