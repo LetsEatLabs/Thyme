@@ -14,9 +14,13 @@ Usage of thyme:
         Start a chat session with the GPT model. Must be used with -oa. Can be used with -file to chat about a file.
   -file string
         Pass file to the prompt. Cannot be used with -a.
+  -history string
+        Review the history of your queries. -history [chat, summary, query, all]
   -ksum string
         Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model
   -l    List all available prompts (-p) and their descriptions. Will exit.
+  -lang string
+        The language to format the response syntax for. Omit to 'guess'.
   -model string
         The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt
   -oa
