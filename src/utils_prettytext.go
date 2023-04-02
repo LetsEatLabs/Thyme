@@ -19,10 +19,34 @@ import (
 /////////////////
 // Lipgloss Styles
 
+type FontStyle struct {
+	spinnerText  lipgloss.Style
+	historyTitle lipgloss.Style
+	historyInfo  lipgloss.Style
+	historyText  lipgloss.Style
+}
+
 var (
 	// Lipgloss style for the query waiting spinner
-	spinnerText = lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575"))
+	spinnerText  = lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575"))
+	historyTitle = lipgloss.NewStyle().Foreground(lipgloss.Color("#f3f6f4")).Bold(true)
+	historyInfo  = lipgloss.NewStyle().Foreground(lipgloss.Color("#1FC3B7"))
+	historyText  = lipgloss.NewStyle().Foreground(lipgloss.Color("#8de765"))
+
+	fontStyles = FontStyle{
+		spinnerText:  spinnerText,
+		historyTitle: historyTitle,
+		historyInfo:  historyInfo,
+		historyText:  historyText,
+	}
 )
+
+/////////////////
+
+// Return the font style
+func getFontStyles() FontStyle {
+	return fontStyles
+}
 
 /////////////////
 

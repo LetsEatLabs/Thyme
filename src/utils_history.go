@@ -39,10 +39,13 @@ func viewHistoryQueries(historyFlag string) {
 	// Get the history file
 	historyFiles := getHistoryFiles()
 
+	// Get the font styles
+	styles := getFontStyles()
+
 	if historyFlag == "query" || historyFlag == "all" {
 		fmt.Println()
-		fmt.Println("Queries")
-		fmt.Println("----------")
+		fmt.Println(styles.historyTitle.Render("Queries"))
+		fmt.Println(styles.historyTitle.Render("----------"))
 
 		// Load the history files
 		for i := range historyFiles["openai"] {
@@ -52,8 +55,8 @@ func viewHistoryQueries(historyFlag string) {
 				if len(queryHistory.Query) > 75 {
 					queryHistory.Query = queryHistory.Query[:75]
 				}
-				fmt.Println("File: " + fname)
-				fmt.Println("Asked: " + queryHistory.Query + "\n")
+				fmt.Println(styles.historyInfo.Render("File: ") + styles.historyText.Render(fname))
+				fmt.Println(styles.historyInfo.Render("Asked: ") + styles.historyText.Render(queryHistory.Query) + "\n")
 			}
 		}
 	}
@@ -61,8 +64,8 @@ func viewHistoryQueries(historyFlag string) {
 	if historyFlag == "summary" || historyFlag == "all" {
 
 		fmt.Println()
-		fmt.Println("Summaries")
-		fmt.Println("----------")
+		fmt.Println(styles.historyTitle.Render("Summaries"))
+		fmt.Println(styles.historyTitle.Render("----------"))
 
 		// Load the summary files
 		for i := range historyFiles["kagi"] {
@@ -72,8 +75,8 @@ func viewHistoryQueries(historyFlag string) {
 				if len(summaryHistory.Query) > 75 {
 					summaryHistory.Query = summaryHistory.Query[:75]
 				}
-				fmt.Println("File: " + fname)
-				fmt.Println("Summarized: " + summaryHistory.Query + "\n")
+				fmt.Println(styles.historyInfo.Render("File: ") + styles.historyText.Render(fname))
+				fmt.Println(styles.historyInfo.Render("Summarized: ") + styles.historyText.Render(summaryHistory.Query) + "\n")
 			}
 		}
 	}
@@ -81,8 +84,8 @@ func viewHistoryQueries(historyFlag string) {
 	if historyFlag == "chat" || historyFlag == "all" {
 
 		fmt.Println()
-		fmt.Println("Chats")
-		fmt.Println("----------")
+		fmt.Println(styles.historyTitle.Render("Chats"))
+		fmt.Println(styles.historyTitle.Render("----------"))
 
 		// Load the chat files
 		for i := range historyFiles["openai"] {
@@ -95,8 +98,8 @@ func viewHistoryQueries(historyFlag string) {
 					targetChat.Query = targetChat.Query[:75]
 				}
 
-				fmt.Println("File: " + fname)
-				fmt.Println("Starter: " + targetChat.Query + "\n")
+				fmt.Println(styles.historyInfo.Render("File: ") + styles.historyText.Render(fname))
+				fmt.Println(styles.historyInfo.Render("Starter: ") + styles.historyText.Render(targetChat.Query) + "\n")
 			}
 		}
 	}
