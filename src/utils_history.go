@@ -42,6 +42,60 @@ func viewHistoryQueries(historyFlag string) {
 	// Get the font styles
 	styles := getFontStyles()
 
+	// Check if we want to view a file first
+	if doesFileExist(historyFlag) {
+
+		if strings.Contains(historyFlag, "query") {
+			queryHistory := loadQueryHistoryFile(historyFlag)
+			fmt.Println(styles.historyTitle.Render("Query: "))
+			fmt.Println(styles.historyTitle.Render("----------"))
+			fmt.Println(queryHistory.Query)
+			fmt.Println()
+
+			fmt.Println(styles.historyTitle.Render("Answer: "))
+			fmt.Println(styles.historyTitle.Render("----------"))
+			content := formatCodeBlocksInMarkdown(queryHistory.Answer, "")
+
+			fmt.Println(content)
+		}
+
+		if strings.Contains(historyFlag, "chat") {
+			queryHistory := loadChatHistoryFile(historyFlag)
+
+			chl := queryHistory.ChatHistoryLines
+			for i := range chl {
+				fmt.Println(styles.historyTitle.Render("Query: "))
+				fmt.Println(styles.historyTitle.Render("----------"))
+				fmt.Println(chl[i].Query)
+				fmt.Println()
+
+				fmt.Println(styles.historyTitle.Render("Answer: "))
+				fmt.Println(styles.historyTitle.Render("----------"))
+				content := formatCodeBlocksInMarkdown(chl[i].Answer, "")
+
+				fmt.Println(content)
+				fmt.Println()
+			}
+
+		}
+
+		if strings.Contains(historyFlag, "summary") {
+			queryHistory := loadSummaryHistoryFile(historyFlag)
+			fmt.Println(styles.historyTitle.Render("Source: "))
+			fmt.Println(styles.historyTitle.Render("----------"))
+			fmt.Println(queryHistory.Query)
+			fmt.Println()
+
+			fmt.Println(styles.historyTitle.Render("Summary: "))
+			fmt.Println(styles.historyTitle.Render("----------"))
+			content := formatCodeBlocksInMarkdown(queryHistory.Answer, "")
+
+			fmt.Println(content)
+		}
+
+		os.Exit(0)
+	}
+
 	if historyFlag == "query" || historyFlag == "all" {
 		fmt.Println()
 		fmt.Println(styles.historyTitle.Render("Queries"))
@@ -198,3 +252,17 @@ func loadChatHistoryFile(filename string) ChatHistory {
 
 	return chatHistory
 }
+
+/////////////
+
+// Checks if a string is a file that exists on the system
+func doesFileExist(filename string) bool {
+	fileInfo, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	} else {
+		return !fileInfo.IsDir() // We only want files, not directories
+	}
+}
+
+/////////////

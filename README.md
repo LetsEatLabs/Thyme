@@ -15,21 +15,20 @@ Usage of thyme:
   -file string
         Pass file to the prompt. Cannot be used with -a.
   -history string
-        Review the history of your queries. -history [chat, summary, query, all]
+        Review the history of your queries, or a specific one. -history [chat, summary, query, all, <full-path-to-history-file>]
   -ksum string
         Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model
   -l    List all available prompts (-p) and their descriptions. Will exit.
   -lang string
         The language to format the response syntax for. Omit to 'guess'.
   -model string
-        The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt
+        The model to use for the request. OpenAI: [chatgpt, gpt4] Kagi: [agnes, daphne, muriel($$)]. Defaults are chatgpt and agnes.
   -oa
         Use the OpenAI API.
   -p string
         The prompt to use for the GPT request: thyme -p active_voice my_blog_post.txt
   -quiet
-        Will omit the spinner and typewriter.
-
+        Will omit the spinner, typewriter, and color effects.
 ```
 
 

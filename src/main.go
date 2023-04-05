@@ -24,19 +24,23 @@ Flags:
         Start a chat session with the GPT model. Must be used with -oa. Can be used with -file to chat about a file.
   -file string
         Pass file to the prompt. Cannot be used with -a.
+  -history string
+        Review the history of your queries, or a specific one. -history [chat, summary, query, all, <full-path-to-history-file>]
   -ksum string
         Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model
   -l    List all available prompts (-p) and their descriptions. Will exit.
   -lang string
         The language to format the response syntax for. Omit to 'guess'.
   -model string
-        The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt
+        The model to use for the request. OpenAI: [chatgpt, gpt4] Kagi: [agnes, daphne, muriel($$)]. Defaults are chatgpt and agnes.
   -oa
         Use the OpenAI API.
   -p string
         The prompt to use for the GPT request: thyme -p active_voice my_blog_post.txt
   -quiet
-        Will omit the spinner and typewriter.           
+        Will omit the spinner, typewriter, and color effects.
+
+          
 `
 
 	fmt.Println(helpStr)
@@ -84,18 +88,18 @@ func main() {
 	//arguments, _ := parseArgs()
 	prompts := initPrompts()
 
-	animationFlagVal := flag.Bool("quiet", false, "Will omit the spinner and typewriter.")
+	animationFlagVal := flag.Bool("quiet", false, "Will omit the spinner, typewriter, and color effects.")
 	listFlag := flag.Bool("l", false, "List all available prompts (-p) and their descriptions. Will exit.")
 	questionFlag := flag.String("a", "", "Ask a question and get a response")
 	promptFlag := flag.String("p", "", "The prompt to use for the GPT request: thyme -p active_voice my_blog_post.txt")
 	customPromptFlag := flag.String("c", "", "Pass a custom prompt to the GPT request. Cannot be used with -p.")
-	modelFlag := flag.String("model", "", "The model to use for the GPT request [chatgpt, gpt4]. Default is chatgpt")
+	modelFlag := flag.String("model", "", "The model to use for the request. OpenAI: [chatgpt, gpt4] Kagi: [agnes, daphne, muriel($$)]. Defaults are chatgpt and agnes.")
 	chatFlag := flag.Bool("chat", false, "Start a chat session with the GPT model. Must be used with -oa. Can be used with -file to chat about a file.")
 	kagiFlag := flag.String("ksum", "", "Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model")
 	openAIFlag := flag.Bool("oa", false, "Use the OpenAI API.")
 	fileFlag := flag.String("file", "", "Pass file to the prompt. Cannot be used with -a.")
 	langFlag := flag.String("lang", "", "The language to format the response syntax for. Omit to 'guess'.")
-	historyFlag := flag.String("history", "", "Review the history of your queries. -history [chat, summary, query, all]")
+	historyFlag := flag.String("history", "", "Review the history of your queries, or a specific one. -history [chat, summary, query, all, <full-path-to-history-file>]")
 	flag.Parse()
 
 	// A map of string names to our models
