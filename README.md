@@ -18,6 +18,8 @@ Usage of thyme:
         Review the history of your queries, or a specific one. -history [chat, summary, query, all, <full-path-to-history-file>]
   -ksum string
         Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model
+  -ktype string
+        Type of summary from the Kagi Universal Summarizer API. -ktype [summary,notes]. 'summary' gives a paragraph, 'notes' gives points.
   -l    List all available prompts (-p) and their descriptions. Will exit.
   -lang string
         The language to format the response syntax for. Omit to 'guess'.
@@ -29,6 +31,7 @@ Usage of thyme:
         The prompt to use for the GPT request: thyme -p active_voice my_blog_post.txt
   -quiet
         Will omit the spinner, typewriter, and color effects.
+
 ```
 
 
