@@ -29,9 +29,10 @@ type KagiResponse struct {
 }
 
 type KagiRequest struct {
-	Engine string
-	Input  string // Can be text, a URL, or a filename
-	Type   string // url, text, or file
+	Engine      string
+	Input       string // Can be text, a URL, or a filename
+	Type        string // url, text, or file
+	SummaryType string // summary or notes (points)
 }
 
 func makeSummaryRequest(kagi KagiRequest) KagiResponse {
@@ -55,13 +56,31 @@ func makeSummaryRequest(kagi KagiRequest) KagiResponse {
 		"Content-Type":  "application/json",
 	}
 
-	request := fmt.Sprintf(`{"%s": %s, "engine": %s}`, kagi.Type, cleanInput, cleanEngine)
+	// Get the summary type. By default anything but "notes" is a "summary"
+	if kagi.SummaryType != "notes" {
+		kagi.SummaryType = "summary"
+	}
+
+	// It is actually called takeaway but notes is shorter to type
+	if kagi.SummaryType == "notes" {
+		kagi.SummaryType = "takeaway"
+	}
+
+	cleanSumType, err := json.Marshal(kagi.SummaryType)
+	if err != nil {
+		fmt.Println("Error marshalling sumType: ", err)
+		os.Exit(1)
+	}
+
+	request := fmt.Sprintf(`{"%s": %s, "engine": %s, "summary_type": %s}`,
+		kagi.Type, cleanInput, cleanEngine, cleanSumType)
+
 	brequest := []byte(request) // Bytes so we can send it over the wire
 
 	// Create a new request with custom headers and JSON payload
 	req, err := http.NewRequest("POST", kagiURLSummaryEndpoint, bytes.NewBuffer(brequest))
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 
 	// Apply the headers to the request
@@ -73,7 +92,7 @@ func makeSummaryRequest(kagi KagiRequest) KagiResponse {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	defer resp.Body.Close()
 
@@ -81,7 +100,7 @@ func makeSummaryRequest(kagi KagiRequest) KagiResponse {
 	var response KagiResponse
 	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 
 	if os.Getenv("THYME_QUERY_LOGGING") == "true" {

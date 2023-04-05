@@ -96,6 +96,7 @@ func main() {
 	modelFlag := flag.String("model", "", "The model to use for the request. OpenAI: [chatgpt, gpt4] Kagi: [agnes, daphne, muriel($$)]. Defaults are chatgpt and agnes.")
 	chatFlag := flag.Bool("chat", false, "Start a chat session with the GPT model. Must be used with -oa. Can be used with -file to chat about a file.")
 	kagiFlag := flag.String("ksum", "", "Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model")
+	kagiTypeFlag := flag.String("ktype", "", "Type of summary from the Kagi Universal Summarizer API. -ktype [summary,notes]. 'summary' gives a paragraph, 'notes' gives points.")
 	openAIFlag := flag.Bool("oa", false, "Use the OpenAI API.")
 	fileFlag := flag.String("file", "", "Pass file to the prompt. Cannot be used with -a.")
 	langFlag := flag.String("lang", "", "The language to format the response syntax for. Omit to 'guess'.")
@@ -167,9 +168,10 @@ func main() {
 		}
 
 		kagi := KagiRequest{
-			Engine: engineChoice,
-			Input:  *questionFlag,
-			Type:   *kagiFlag,
+			Engine:      engineChoice,
+			Input:       *questionFlag,
+			Type:        *kagiFlag,
+			SummaryType: *kagiTypeFlag,
 		}
 
 		response := makeSummaryRequest(kagi)
