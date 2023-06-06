@@ -18,8 +18,9 @@ var (
 
 type KagiResponse struct {
 	Data struct {
-		Output string `json:"output"`
-		Tokens int    `json:"tokens"`
+		Output     string       `json:"output"`
+		Tokens     int          `json:"tokens"`
+		References []KagiSource `json:"references"`
 	} `json:"data"`
 
 	Meta struct {
@@ -34,6 +35,12 @@ type KagiRequest struct {
 	Input       string // Can be text, a URL, or a filename
 	Type        string // url, text, or file
 	SummaryType string // summary or notes (points)
+}
+
+type KagiSource struct {
+	Title   string `json:"title"`
+	Snippet string `json:"snippet"`
+	URL     string `json:"url"`
 }
 
 func makeKagiRequest(kagi KagiRequest) KagiResponse {
@@ -94,7 +101,6 @@ func makeKagiRequest(kagi KagiRequest) KagiResponse {
 		usingEndpoint = kagiURLSummaryEndpoint
 	}
 
-	fmt.Println("Using endpoint: ", usingEndpoint, " with request: ", string(brequest))
 	req, err := http.NewRequest("POST", usingEndpoint, bytes.NewBuffer(brequest))
 	if err != nil {
 		fmt.Println(err)
@@ -120,6 +126,10 @@ func makeKagiRequest(kagi KagiRequest) KagiResponse {
 		fmt.Println(err)
 	}
 
+	if kagi.Type == "fastgpt" {
+		response.Data.Output += "\n\n" + kagiSourcesToString(response.Data.References)
+	}
+
 	if os.Getenv("THYME_QUERY_LOGGING") == "true" {
 		saveKagiSummary(response, kagi)
 	}
@@ -127,12 +137,17 @@ func makeKagiRequest(kagi KagiRequest) KagiResponse {
 	return response
 }
 
-// func makeFileSummaryRequest(kagi KagiRequest) KagiResponse {
-// 	//kagiKey := os.Getenv("KAGI_API_KEY")
+func kagiSourcesToString(sources []KagiSource) string {
+	var output string
 
-// 	response := KagiResponse{Output: "Not Implemented", Tokens: 0}
-// 	return response
-// }
+	output += "Sources:\n----------\n"
+
+	for a, source := range sources {
+		output += fmt.Sprintf("[%d] %s\n%s\n%s\n\n", a+1, source.Title, source.URL, source.Snippet)
+	}
+
+	return output
+}
 
 func saveKagiSummary(response KagiResponse, request KagiRequest) {
 	directory := os.Getenv("THYME_QUERY_KAGI_LOGGING_DIR")
