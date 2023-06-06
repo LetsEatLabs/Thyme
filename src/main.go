@@ -97,6 +97,7 @@ func main() {
 	modelFlag := flag.String("model", "", "The model to use for the request. OpenAI: [chatgpt, gpt4] Kagi: [agnes, daphne, muriel($$)]. Defaults are chatgpt and agnes.")
 	chatFlag := flag.Bool("chat", false, "Start a chat session with the GPT model. Must be used with -oa. Can be used with -file to chat about a file.")
 	kagiFlag := flag.String("ksum", "", "Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model")
+	kagiGPTFlag := flag.Bool("kgpt", false, "Use the Kagi FastGPT API. -ksum [query text]. Always defaults to web_search=true")
 	kagiTypeFlag := flag.String("ktype", "", "Type of summary from the Kagi Universal Summarizer API. -ktype [summary,notes]. 'summary' gives a paragraph, 'notes' gives points.")
 	openAIFlag := flag.Bool("oa", false, "Use the OpenAI API.")
 	fileFlag := flag.String("file", "", "Pass file to the prompt. Cannot be used with -a.")
@@ -147,7 +148,7 @@ func main() {
 	// So we only ever use one call per execution.
 
 	// Handle a Kagi API
-	if *kagiFlag != "" {
+	if *kagiFlag != "" || *kagiGPTFlag == true {
 
 		// Start the spinner
 		if *animationFlagVal == false {
@@ -175,7 +176,13 @@ func main() {
 			SummaryType: *kagiTypeFlag,
 		}
 
-		response := makeSummaryRequest(kagi)
+		if *kagiGPTFlag != false {
+			kagi.Type = "fastgpt"
+			kagi.SummaryType = "fastgpt"
+			kagi.Engine = "fastgpt"
+		}
+
+		response := makeKagiRequest(kagi)
 
 		// Tell the spinner we are done and print the response
 		if *animationFlagVal == false {
