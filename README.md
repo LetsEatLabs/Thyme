@@ -7,30 +7,32 @@ A CLI helper for interacting with multiple AI/LLM APIs. Capable of sending files
 ```bash
 Usage of thyme:
   -a string
-        Ask a question and get a response
+      Ask a question and get a response
   -c string
-        Pass a custom prompt to the GPT request. Cannot be used with -p.
+      Pass a custom prompt to the GPT request. Cannot be used with -p.
   -chat
-        Start a chat session with the GPT model. Must be used with -oa. Can be used with -file to chat about a file.
+      Start a chat session with the GPT model. Must be used with -oa. Can be used with -file to chat about a file.
   -file string
-        Pass file to the prompt. Cannot be used with -a.
+      Pass file to the prompt. Cannot be used with -a.
   -history string
-        Review the history of your queries, or a specific one. -history [chat, summary, query, all, <full-path-to-history-file>]
+      Review the history of your queries, or a specific one. -history [chat, summary, query, all, <full-path-to-history-file>]
+  -kgpt
+      Use the Kagi FastGPT API. -ksum [query text]. Always defaults to web_search=true
   -ksum string
-        Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model
+      Use the Kagi Universal Summarizer API. -ksum [text | url]. Also works with -model
   -ktype string
-        Type of summary from the Kagi Universal Summarizer API. -ktype [summary,notes]. 'summary' gives a paragraph, 'notes' gives points.
-  -l    List all available prompts (-p) and their descriptions. Will exit.
+      Type of summary from the Kagi Universal Summarizer API. -ktype [summary,notes]. 'summary' gives a paragraph, 'notes' gives points.
+  -l  List all available prompts (-p) and their descriptions. Will exit.
   -lang string
-        The language to format the response syntax for. Omit to 'guess'.
+      The language to format the response syntax for. Omit to 'guess'.
   -model string
-        The model to use for the request. OpenAI: [chatgpt, gpt4] Kagi: [agnes, daphne, muriel($$)]. Defaults are chatgpt and agnes.
+      The model to use for the request. OpenAI: [chatgpt, gpt4] Kagi: [agnes, daphne, muriel($$)]. Defaults are chatgpt and agnes.
   -oa
-        Use the OpenAI API.
+      Use the OpenAI API.
   -p string
-        The prompt to use for the GPT request: thyme -p active_voice my_blog_post.txt
+      The prompt to use for the GPT request: thyme -p active_voice my_blog_post.txt
   -quiet
-        Will omit the spinner, typewriter, and color effects.
+      Will omit the spinner, typewriter, and color effects.
 
 ```
 
@@ -70,6 +72,15 @@ The models we currently support interacting with are as follows:
 | `gpt4` | OpenAI | No |
 | `agnes` | Kagi | Yes |
 | `daphne` | Kagi | No |
+
+We also support other features of the Kagi API:
+
+| Feature | Use |
+| --- | --- |
+| `ksum` | Summarize large bodies of text or a URL |
+| `kgpt` | Kagi's FastGPT with web search capabilities. |
+
+
 
 ## Use
 
