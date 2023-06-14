@@ -123,7 +123,7 @@ func gptChat(model string, fileChat bool, proglanguage string, file ...string) {
 			// Start the spinner
 			go spinner(spinningComplete)
 
-			prompt := "Hello! We would like to talk about this file, please:"
+			prompt := "Hello! We would like to ask some questions about this file, please:"
 			text := readFileToString(file[0])
 			text = strings.Replace(text, "\n", "", -1)
 			sendtext := fmt.Sprintf("%s %s", prompt, text)

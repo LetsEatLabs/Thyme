@@ -6,7 +6,7 @@ require (
 	github.com/alecthomas/chroma v0.10.0
 	github.com/charmbracelet/lipgloss v0.7.1
 	github.com/go-enry/go-enry/v2 v2.8.4
-	github.com/sashabaranov/go-openai v1.5.2
+	github.com/sashabaranov/go-openai v1.10.2-0.20230613203226-3f4e3bb0ca25
 )
 
 require (

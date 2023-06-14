@@ -107,8 +107,11 @@ func main() {
 
 	// A map of string names to our models
 	openAIModels := map[string]string{
-		"chatgpt": openai.GPT3Dot5Turbo,
-		"gpt4":    openai.GPT4,
+		"chatgpt":       openai.GPT3Dot5Turbo,
+		"gpt4":          openai.GPT4,
+		"gpt4-32k":      openai.GPT432K,
+		"gpt4-0613":     openai.GPT40613,
+		"gpt4-32k-0613": openai.GPT432K0613,
 	}
 
 	kagiModels := map[string]string{
