@@ -16,6 +16,8 @@ Usage of thyme:
       Pass file to the prompt. Cannot be used with -a.
   -history string
       Review the history of your queries, or a specific one. -history [chat, summary, query, all, <full-path-to-history-file>]
+  -json string
+      Give a json schema file to send as a FunctionCall to get a structured response. Currently only works with a prompt (-p or -c). -json <full-path-to-json-schema-file>
   -kgpt
       Use the Kagi FastGPT API. -ksum [query text]. Always defaults to web_search=true
   -ksum string
@@ -188,6 +190,120 @@ Using the Kagi text summary API to summarize the [599 word sentence](https://nat
 ```bash
 ~ $: thyme -ksum text -a "[OMITTED FOR BREVITY]"
 The document describes the author's experience of revisiting the various rooms he had slept in throughout his life in a long dream. He describes the different types of rooms he had slept in, such as rooms in winter where he would feel warm and cozy, and rooms in summer where he would feel a part of the warm evening. He also describes specific rooms, such as the Louis XVI room, which was so cheerful that he could never feel unhappy in it, and a little room with a high ceiling and mahogany walls, where he felt anxious and uncomfortable. The author describes how his mind would elongate itself upwards to take on the exact shape of the room, and how he would spend anxious nights until he became accustomed to the room and its surroundings. The author also describes how his perception of the rooms changed over time, as he became accustomed to them and the unfamiliar became familiar. Overall, the document is a reflection on the power of memory and how our experiences shape our perceptions of the world around us.
+```
+
+Using a JSON schema to get plant data
+
+- Schema File:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "plant-info": {
+      "type": "object",
+      "description": "Basic, factual details about the plant. Short answers.",
+      "properties": {
+        "common-name": {
+          "type": "string"
+        },
+        "latin-name": {
+          "type": "string"
+        },
+        "plant-description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "common-name",
+        "latin-name",
+        "plant-description"
+      ]
+    },
+    "planting-details": {
+      "type": "object",
+      "description": "Details on how to sow, care, and harvest the plant.",
+      "properties": {
+        "soil": {
+          "type": "string"
+        },
+        "sun": {
+          "type": "string"
+        },
+        "water": {
+          "type": "string"
+        },
+        "sowing-method": {
+          "type": "string"
+        },
+        "grow-days": {
+          "type": "number"
+        },
+        "sowing-months": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "harvest-months": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "planting-instructions": {
+          "type": "string"
+        },
+        "care-instructions": {
+          "type": "string"
+        },
+        "harvest-instructions": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "soil",
+        "sun",
+        "water",
+        "sowing-method",
+        "grow-days",
+        "sowing-months",
+        "harvest-months",
+        "planting-instructions",
+        "care-instructionsharvest-instructions"
+      ]
+    }
+  },
+  "required": [
+    "plant-info",
+    "planting-details"
+  ]
+}
+```
+
+- Using the schema file. Note this currently requires a prompt
+
+```bash
+~ $: thyme -oa -model gpt4-0613 -c "As a gardener please give details about the following plant given your json schema" -a "broccoli"  -json ../test.txt
+{
+    "plant-info": {
+        "common-name": "Broccoli",
+        "latin-name": "Brassica oleracea",
+        "plant-description": "Broccoli is a green vegetable that visually resembles a miniature tree. It is part of the Brassica oleracea species, the same family as cabbage, Brussels sprouts, and kale. Not only does it have a rich, savory taste, but it's also a nutrient powerhouse packed with vitamins, minerals, fiber, and antioxidants."
+    },
+    "planting-details": {
+        "soil": "Rich, well-drained, slightly acidic soil",
+        "sun": "Full sun",
+        "water": "1 to 1.5 inches of water per week",
+        "sowing-method": "Direct sowing or transplants",
+        "grow-days": 80-100,
+        "sowing-months": ["March","June"],
+        "harvest-months": ["August","November"],
+        "planting-instructions": "Sow seeds 0.5 inches deep and 3 inches apart. If using transplants, plant them 12-20 inches apart.",
+        "care-instructions": "Keep the soil moist but not waterlogged. Provide consistent water supply, weeding, and protect from pests.",
+        "harvest-instructions": "Harvest when the broccoli head is fully formed but before the tiny buds begin to open and yellow flowers emerge. Cut the stalk at an angle to prevent water from settling and rotting the remaining stalk."
+    }
+}
 ```
 
 ## External Resources
