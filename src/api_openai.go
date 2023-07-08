@@ -45,6 +45,42 @@ func callChatGPT(query string, prompt string, model string) string {
 	return resp.Choices[0].Message.Content
 }
 
+// Call the ChatGPT API with passed string and using a prompt and passing a JSON schema
+func callChatGPTFunctionCall(query string, prompt string, model string, funcCall []byte) string {
+	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
+
+	var FunctionCallObj openai.FunctionCall
+	FunctionCallObj.Name = "functioncall"
+	FunctionCallObj.Arguments = string(funcCall)
+
+	resp, err := client.CreateChatCompletion(
+		context.Background(),
+
+		// https://platform.openai.com/docs/guides/chat/chat-vs-completions
+
+		openai.ChatCompletionRequest{
+			Model: model,
+			Messages: []openai.ChatCompletionMessage{
+				{
+					Role:    openai.ChatMessageRoleSystem,
+					Content: prompt,
+				},
+				{
+					Role:         openai.ChatMessageRoleAssistant,
+					Content:      query,
+					FunctionCall: &FunctionCallObj,
+				},
+			},
+		},
+	)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return resp.Choices[0].Message.Content
+}
+
 /////////////////
 
 // Call the ChatGPT API with passed string and no prompt
@@ -75,7 +111,7 @@ func callChatGPTNoPrompt(query string, model string) string {
 
 /////////////////
 
-// Call the GPT Completions API
+// Call the GPT Completions API UNUSED CURRENTLY IT SEEMS
 func callGPT(query string) string {
 	c := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 	ctx := context.Background()

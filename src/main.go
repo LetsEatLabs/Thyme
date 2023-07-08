@@ -101,6 +101,7 @@ func main() {
 	kagiTypeFlag := flag.String("ktype", "", "Type of summary from the Kagi Universal Summarizer API. -ktype [summary,notes]. 'summary' gives a paragraph, 'notes' gives points.")
 	openAIFlag := flag.Bool("oa", false, "Use the OpenAI API.")
 	fileFlag := flag.String("file", "", "Pass file to the prompt. Cannot be used with -a.")
+	jsonFlag := flag.String("json", "", "Give a json schema file to send as a FunctionCall to get a structured response.")
 	langFlag := flag.String("lang", "", "The language to format the response syntax for. Omit to 'guess'.")
 	historyFlag := flag.String("history", "", "Review the history of your queries, or a specific one. -history [chat, summary, query, all, <full-path-to-history-file>]")
 	flag.Parse()
@@ -259,7 +260,22 @@ func main() {
 			if *promptFlag != "" && *customPromptFlag != "" {
 				response = callChatGPTNoPrompt(request, openAIModels[engineChoice])
 			} else {
-				response = callChatGPT(request, chosenPrompt, openAIModels[engineChoice])
+
+				if *jsonFlag != "" {
+
+					jsonBytes, err := ioutil.ReadFile(*jsonFlag)
+
+					if err != nil {
+						fmt.Println("Error reading JSON file: ", err)
+						os.Exit(1)
+					}
+
+					response = callChatGPTFunctionCall(request, chosenPrompt, openAIModels[engineChoice], jsonBytes)
+
+				} else {
+					response = callChatGPT(request, chosenPrompt, openAIModels[engineChoice])
+				}
+
 			}
 
 			// Tell the spinner we are done
