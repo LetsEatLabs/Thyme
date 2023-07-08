@@ -258,7 +258,22 @@ func main() {
 			var response string
 
 			if *promptFlag != "" && *customPromptFlag != "" {
-				response = callChatGPTNoPrompt(request, openAIModels[engineChoice])
+
+				if *jsonFlag != "" {
+
+					jsonBytes, err := ioutil.ReadFile(*jsonFlag)
+
+					if err != nil {
+						fmt.Println("Error reading JSON file: ", err)
+						os.Exit(1)
+					}
+
+					response = callChatGPTFunctionCallNoPrompt(request, chosenPrompt, openAIModels[engineChoice], jsonBytes)
+				} else {
+
+					response = callChatGPTNoPrompt(request, openAIModels[engineChoice])
+				}
+
 			} else {
 
 				if *jsonFlag != "" {
